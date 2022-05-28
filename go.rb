@@ -1,6 +1,12 @@
+module Clickable
+  @@clickable_objects = []
+  @clickable = true
+  puts "I am #{self}"
+end
+
 class GraphicObject
   def initialize(posx: -1,posy: 0,height: 100,width: 100,color: "white")
-    p self
+    puts "I am #{self} and i am #{self.class.include? Clickable}"
     @active = true
     @go = Rectangle.new(
     x: posx, y: posx,
@@ -65,4 +71,8 @@ class Textobj < GraphicObject
     @slave_go = []
     
   end
+end
+
+class Buttonobj < GraphicObject
+  include Clickable
 end
