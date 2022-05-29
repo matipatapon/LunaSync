@@ -6,13 +6,9 @@ require_relative 'go'
 
 
 screen = GraphicObject.new(width: Window.width,height: Window.height)
-screen.add(what: "Textobj")
+
 tick = 0 
-
-text = Textobj.new(:color => "red")
-
 update do
-  text.change_text((tick%60).to_s)
   tick+=1
 end 
 
@@ -24,6 +20,7 @@ on :mouse_down do |event|
   end
   Clickable::focus
 end
+
 #Keyboard interaction 
 on :key_down do |event|
   key = event.key
@@ -42,5 +39,9 @@ rainbowclick = Proc.new do |obj|
   end
   obj.go.color = color
 end
-butt = screen.add(what: "Inputobj",z: 10)
-show
+#Blueprint of the page !
+puts "Width : #{Window.width} Height : #{Window.height}"
+scene1 = screen.add(posx: 0,posy: 0 ,width: Window.width,height: Window.height,color: "gray")
+banner = scene1.add(posx: 250,width: 140,height: 50,color: "black")
+text1 = banner.add(what: "Textobj",text: "FOSSYNC",relative: true,posx: 15,posy: 10,color: "white",size: 30,style: "normal")
+show 

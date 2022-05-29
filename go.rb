@@ -41,14 +41,25 @@ end
 class GraphicObject
   attr_reader :go
 
-  def initialize(posx: -1,posy: 0,height: 100,width: 100,color: "white",z: 0)
+  def initialize(
+    #Default parameters of GraphicObject
+    posx: 0,posy: 0,height: 100,width: 100,color: "white",z: 0,
+    #Textobj parameters  
+    text: "whatever",size:20,style: "normal",
+    #Button parameters
+    click_method: nil
+                )
     #Creating pre definied methods for diffrent things
-    create_rectangle = Proc.new do 
-      puts "I am #{self}"
-      @go = Rectangle.new(
-      x: posx, y: posx,
-      width: width, height: height, color: color , z: z
+    create = Proc.new do |what|
+      case what
+      when "rectangle" 
+        @go = Rectangle.new(
+        x: posx, y: posy,
+        width: width, height: height, color: color , z: z
       )
+      when "text"
+        @go = Text.new(text, x: posx , y:posy ,color: color , size:size, z: z,style: style)
+      end
     end
 
     standart_init = Proc.new do 
@@ -58,23 +69,37 @@ class GraphicObject
       
       @slave_go = []
     end 
-    standart_init.call
-    create_rectangle.call
+
+
     #Child graphic objects 
 
     #Reporting this instance to clicable objects array 
     if self.class.include? Clickable then Clickable::Clickable_objects << self end 
     
+    #personalizing initialize depending of class 
+    puts "My class is #{self.class}"
+    
+    if self.class == Inputobj
+      standart_init.call
+      create.call("rectangle")
+    elsif self.class == Textobj 
+      create.call("text")
+    else self.class == GraphicObject 
+      standart_init.call
+      create.call("rectangle")
+    end
   end    
   
   #Create new under graphical object
-  def add(what: "GraphicObject",posx: 0,posy: 0,z: @go.z+1,height: 100,width: 100,color: "black",text: "whatever",object: nil,click_method: nil)
+  def add(what: "GraphicObject",posx: 0,posy: 0,z: @go.z+1,height: 100,width: 100,color: "black",text: "whatever",object: nil,click_method: nil,relative: false,size: 20,style: "normal")
     new = nil
+    #position relative to master object 
+    if relative then posx += @go.x ; posy += @go.y end 
     case what
     when "GraphicObject"
       new = GraphicObject.new(posx: posx,posy: posy,height: height, width:width, color: color, z: z)
     when "Textobj"
-      new = Textobj.new(posx: posx, posy: posy,color: color , text: text, z: z)
+      new = Textobj.new(posx: posx, posy: posy,color: color , text: text, z: z, size: size, style: style)
     when "Buttonobj"
       go = Buttonobj.new(posx: posx, posy: posy, color: color, z: z)
       go.set_click_method(click_method)
@@ -124,12 +149,6 @@ end
 
 #Text object
 class Textobj < GraphicObject 
-  
-  def initialize(posx: -1,posy: 0,color: "white",text: "whatever",size:20 , z: 0)
-    @active = true
-    @go = Text.new(text, x: posx , y:posx ,color: color , size:size, z: z)
-    @slave_go = []
-  end
   
   def change_text(text = "Whatever")
     posx = @go.x
