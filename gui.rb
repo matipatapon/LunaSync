@@ -7,7 +7,6 @@ require_relative 'go'
 
 screen = GraphicObject.new(width: Window.width,height: Window.height)
 screen.add(what: "Textobj")
-screen.hide
 tick = 0 
 
 text = Textobj.new(:color => "red")
@@ -19,11 +18,21 @@ end
 
 #Mouse interaction 
 on :mouse_down do |event|
+  Clickable::unfocus
   for co in Clickable::Clickable_objects
-    co.clicked(Window.mouse_x,Window.mouse_y)
+    if co.respond_to?(:clicked) then co.clicked(Window.mouse_x,Window.mouse_y) end
   end
+  Clickable::focus
 end
+#Keyboard interaction 
+on :key_down do |event|
+  key = event.key
+  #transmit keys do current focused element if he has get_key method !!!
+  focused = Clickable::Clickable_objects[0]
+  if focused.respond_to?(:get_key) then focused.get_key(key) end
 
+end
+#Test zone 
 rainbowclick = Proc.new do |obj|
   puts "Fairly tail power of friendship !!!!"
   hex = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
@@ -33,6 +42,5 @@ rainbowclick = Proc.new do |obj|
   end
   obj.go.color = color
 end
-butt = screen.add(what: "Buttonobj",method: rainbowclick)
-butt2 = butt.add(what: "Textobj",color: "white")
+butt = screen.add(what: "Inputobj",z: 10)
 show
