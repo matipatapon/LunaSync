@@ -22,12 +22,41 @@ on :mouse_down do |event|
 end
 
 #Keyboard interaction 
+require_relative("KEYMAP/keymap.rb")
+shift = false
+alt = false
+capslock = false
 on :key_down do |event|
   key = event.key
+  puts "key : #{key}"
+  case key
+  when "left shift","right shift"
+    puts "Shift activate !"
+    shift = true
+  when "left alt","right alt"
+    puts "Alt actiavate !"
+    alt = true
+  when "backspace"
+    puts "Delete !"
+  when "capslock"
+    capslock = !capslock
+  else
+    key = translatekey("PL",key,shift,alt,capslock)
+    focused = Clickable::Clickable_objects[0]
+    if focused.respond_to?(:get_key) then focused.get_key(key) end
+  end
   #transmit keys do current focused element if he has get_key method !!!
-  focused = Clickable::Clickable_objects[0]
-  if focused.respond_to?(:get_key) then focused.get_key(key) end
-
+end
+on :key_up do |event|
+  key = event.key
+  case key
+  when "left shift","right shift" 
+    shift = false 
+    puts "Shift deactivated" 
+  when "left alt","right alt"
+    puts "Alt deactivated"
+    alt = false
+  end
 end
 #Test zone 
 rainbowclick = Proc.new do |obj|
@@ -44,4 +73,5 @@ puts "Width : #{Window.width} Height : #{Window.height}"
 scene1 = screen.add(posx: 0,posy: 0 ,width: Window.width,height: Window.height,color: "gray")
 banner = scene1.add(posx: 250,width: 140,height: 50,color: "black")
 text1 = banner.add(what: "Textobj",text: "FOSSYNC",relative: true,posx: 15,posy: 10,color: "white",size: 30,style: "normal")
+input1 = scene1.add(what: "Inputobj",width: 96 , height: 16 , relative: true,size: 20,text: "mmmmmm")
 show 

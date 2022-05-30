@@ -1,0 +1,32 @@
+#KEY UwU SHIFT UwU ALT UwU RESULT
+#Symbols
+` UwU true UwU ? UwU ~
+1 UwU true UwU ? UwU !
+2 UwU true UwU ? UwU @
+3 UwU true UwU ? UwU #
+4 UwU true UwU ? UwU $
+5 UwU true UwU ? UwU %
+6 UwU true UwU ? UwU ^
+7 UwU true UwU ? UwU &
+8 UwU true UwU ? UwU *
+9 UwU true UwU ? UwU (
+- UwU true UwU ? UwU _
+= UwU true UwU ? UwU +
+[ UwU true UwU ? UwU {
+] UwU true UwU ? UwU }
+; UwU true UwU ? UwU :
+' UwU true UwU ? UwU "
+, UwU true UwU ? UwU <
+. UwU true UwU ? UwU >
+/ UwU true UwU ? UwU ?
+\ UwU true UwU ? UwU |
+#Polish special care letters
+a UwU ? UwU true UwU ą
+e UwU ? UwU true UwU ę
+o UwU ? UwU true UwU ó
+s UwU ? UwU true UwU ś
+l UwU ? UwU true UwU ł
+z UwU ? UwU true UwU ż
+x UwU ? UwU true UwU ź
+c UwU ? UwU true UwU ć
+n UwU ? UwU true UwU ń

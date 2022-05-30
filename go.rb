@@ -58,7 +58,7 @@ class GraphicObject
         width: width, height: height, color: color , z: z
       )
       when "text"
-        @go = Text.new(text, x: posx , y:posy ,color: color , size:size, z: z,style: style)
+        @go = Text.new(text, x: posx , y:posy ,color: color , size:size, z: z,style: style,text: text)
       end
     end
 
@@ -69,7 +69,11 @@ class GraphicObject
       
       @slave_go = []
     end 
-
+    
+    add_text = Proc.new do 
+      puts "I am #{self} and size is #{size}"
+      @text = add(what: "Textobj",color: "white",size: size,text: text)
+    end
 
     #Child graphic objects 
 
@@ -82,6 +86,7 @@ class GraphicObject
     if self.class == Inputobj
       standart_init.call
       create.call("rectangle")
+      add_text.call
     elsif self.class == Textobj 
       create.call("text")
     else self.class == GraphicObject 
@@ -91,7 +96,14 @@ class GraphicObject
   end    
   
   #Create new under graphical object
-  def add(what: "GraphicObject",posx: 0,posy: 0,z: @go.z+1,height: 100,width: 100,color: "black",text: "whatever",object: nil,click_method: nil,relative: false,size: 20,style: "normal")
+  def add(
+    #Default arguments
+    what: "GraphicObject",posx: 0,posy: 0,z: @go.z+1,height: 100,width: 100,color: "black",relative: false,object: nil,
+    #Arguments for Textobj
+    text: "whatever",style: "normal",size: 20,
+    #Arguments for Buttonobj
+    click_method: nil
+    )
     new = nil
     #position relative to master object 
     if relative then posx += @go.x ; posy += @go.y end 
@@ -105,7 +117,7 @@ class GraphicObject
       go.set_click_method(click_method)
       new = go
     when "Inputobj"
-      go = Inputobj.new(posx: posx, posy: posy, color: color , z: z)
+      go = Inputobj.new(posx: posx,width: width,height: height, posy: posy, color: color , z: z,size: size,text: text)
     end
     return new
     
@@ -155,8 +167,9 @@ class Textobj < GraphicObject
     posy = @go.y
     color = @go.color
     size = @go.size  
+    z = @go.z
     @go.remove 
-    @go = Text.new(text,x: posx,y: posy, color: color , size: size)
+    @go = Text.new(text,x: posx,y: posy, color: color , size: size,z: z)
   end
 end
 
@@ -172,7 +185,7 @@ end
 class Inputobj < GraphicObject 
   include Clickable 
   def get_key key
-    puts key
+    @text.change_text(key.to_s)
   end
 end
 
