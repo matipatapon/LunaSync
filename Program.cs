@@ -2,8 +2,8 @@
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.IO;
 using static System.Console;
-
 WriteLine("Choose mode ! server/client");
 string? mode = ReadLine();
 switch (mode){
@@ -21,16 +21,25 @@ void StartServer(){
     IPAddress ip = new IPAddress(address);
     IPEndPoint ep = new IPEndPoint(ip,13000);
     lSocket.Bind(ep);
-    WriteLine("Waiting for connection !");
     lSocket.Listen(2);
-    Socket handler = lSocket.Accept();
-    WriteLine("Connected !");
+    //Listen For incoming data !
     do{
-        byte[] bytes = new byte[1024];
-        int count = handler.Receive(bytes);
-        string data = Encoding.ASCII.GetString(bytes,0,count);
-        WriteLine($"Recived {data} !");
-    }while(1==2);
+        WriteLine("Waiting for connection !");
+        Socket handler = lSocket.Accept();
+        WriteLine("Connected !");
+        int count = 0;
+        //Reviving data !!!
+        string data = string.Empty;
+        var fs = new FileStream("file2.txt",FileMode.Append,FileAccess.Write);
+        do{
+            byte[] bytes = new byte[1024];
+            count = handler.Receive(bytes);
+            fs.Write(bytes,0,bytes.Length);
+            
+            data += Encoding.ASCII.GetString(bytes,0,count);
+        }while(count!=0);
+        fs.Flush();
+    }while(true);
 }
 //Client 
 void StartClient(){
@@ -39,7 +48,7 @@ void StartClient(){
         sSocket.Connect("127.0.0.1",13000);
         string message ="Witaj ziemniaku !";
         byte[] bytek = Encoding.ASCII.GetBytes(message);
-        sSocket.Send(bytek,0);
+        sSocket.SendFile("file.txt");
     }
     catch(SocketException e){
         WriteLine($"Failed to connect error {e.ErrorCode}");
