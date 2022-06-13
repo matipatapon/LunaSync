@@ -4,6 +4,7 @@ using System.Threading;
 using static System.Console;
 var serv = new server(); 
 var cli = new client();
+
+
 serv.StartServerThread();
-cli.StartClient();
-ReadLine();
+cli.StartClientThread();
