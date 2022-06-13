@@ -22,7 +22,14 @@ public class client
     void StartClient(){
         WriteLine("Hello there ^^");
         Write("Please enter first dir path : ");
-        string path1 = ReadLine();
+        string? path1 = ReadLine();
+        
+        while(path1 == null){
+            WriteLine("You must insert correct path !");
+            path1 = ReadLine();
+        }
+        
+        
         get_ip(path1);
 
         Socket sSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
@@ -46,18 +53,25 @@ public class client
     /// <returns></returns>
     public IPAddress get_ip(string path){
         byte[] bytes = new byte[4];
-
-        string isIpFormatVaild = "127";
-        string octet = "([0-9]{1,4})";
+        string isIpFormatVaild = @"^([1-2]?[0-9]{1,2}\.){3}([1-2]?[0-9]{1,2})";
+        string octet = "[1-2]?[0-9]{1,3}";
         bool isMatch = Regex.IsMatch(path,isIpFormatVaild);
         if(isMatch){
             int i = 0;
             foreach(Match match in Regex.Matches(path,octet)){
-                bytes[i++] = (byte)int.Parse(match.Value);
+                int value = int.Parse(match.Value);
+
+                    //Value is too large !!!
+                if (value > 255){
+                    bytes = new byte[4];
+                    break;
+                }
+
+                bytes[i++] = (byte)value;
                 WriteLine($"Octet is {match.Value}");
 
             }
-            
+        
         }
         IPAddress ip4 = new IPAddress(bytes);
         return ip4;
