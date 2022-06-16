@@ -4,7 +4,9 @@ using System.Threading;
 using static System.Console;
 var serv = new server(); 
 var cli = new client();
+//Test zone !!!!
+cli.sandbox();
 
-
-serv.StartServerThread();
-cli.StartClientThread();
+//Commenting out normal behavior !
+//serv.StartServerThread();
+//cli.StartClientThread();
