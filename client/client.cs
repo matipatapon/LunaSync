@@ -5,6 +5,7 @@ using System.IO;
 using static System.Console;
 using System.Threading;
 using System.Text.RegularExpressions;
+using static System.ValueTuple;
 namespace host;
 /// <summary>
 /// Client side of the FOSSYNC.
@@ -16,29 +17,28 @@ public class client
         Thread client_thread = new Thread(client_ext);
         client_thread.Start();
     }
+
+   
     /// <summary>
     /// Starting client side of the FOSSync
     /// </summary>
     void StartClient(){
         WriteLine("Hello there ^^");
         Write("Please enter first dir path : ");
-        WriteLine($"False is {false.ToString()} True is {true.ToString()}");
-        string? path1 = ReadLine();
-        
+        string path1 = ReadLine();
+               
         while(path1 == null){
             WriteLine("You must insert correct path !");
             path1 = ReadLine();
         }
+        var info = getInfoFromPath(path1);
         
-        
-        get_ip(path1);
-
         Socket sSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
         try{
-            sSocket.Connect("127.0.0.1",13000);
-            string message ="Witaj ziemniaku !";
+            sSocket.Connect(info.ipv4,info.port);
+            string message ="<SOF>Witaj ziemniaku !<EOF>";
             byte[] bytek = Encoding.ASCII.GetBytes(message);
-            sSocket.SendFile("file.mp4");
+            sSocket.Send(bytek);
         }
         catch(SocketException e){
             WriteLine($"Failed to connect error {e.ErrorCode}");
@@ -47,9 +47,8 @@ public class client
     }
 
     public void sandbox(){
-        object[] info = new object[3];
-        info = getInfoFromPath("127.0.0.1:50/home/itam");
-        WriteLine(info.ToString());
+        var data = getInfoFromPath("127.0.0.1:50/home/itam");
+        WriteLine(data.ToString());
     }
 
     /// <summary>
@@ -77,7 +76,6 @@ public class client
             }
 
             bytes[i++] = (byte)value;
-            WriteLine($"Octet is {match.Value}");
 
         }
     
@@ -108,14 +106,14 @@ public class client
     /// </summary>
     /// <param name="path">selected dir</param>
     /// <returns>port int</returns>
-    public uint get_port(string path){
+    public int get_port(string path){
         string pattern = @":\d*";
-        uint result = 0;
+        int result = 0;
         if(Regex.IsMatch(path,pattern)){
             string resultTemp = "";
             resultTemp = Regex.Match(path,pattern).Value;
             resultTemp = resultTemp.Substring(1,resultTemp.Length-1);
-            result = uint.Parse(resultTemp);
+            result = int.Parse(resultTemp);
         }
         return result;
     }
@@ -125,12 +123,12 @@ public class client
     /// <param name="path">selected dir address:port/dir </param>
     /// <returns>
     /// Returns data retrived from path
-    /// [0] IPAddress ipaddress 
-    /// [1] int port
-    /// [2] string path
+    ///  IPAddress ipaddress 
+    ///  int port
+    ///  string path
     /// </returns>
 
-    public Object[] getInfoFromPath(string path){
+    public (int port, IPAddress ipv4, string dir) getInfoFromPath(string path){
         var result = new object[3];
 
         //Testing roughly is syntax valid ? 
@@ -141,7 +139,7 @@ public class client
             throw new ArgumentException("Path syntax is invalid");
         }
         //Getting values ! 
-        uint port = get_port(path);
+        int port = get_port(path);
         IPAddress ipv4 = get_ip(path);
         string dir = get_path(path); 
 
@@ -153,7 +151,7 @@ public class client
         result[1] = port;
         result[2] = dir;
 
-        return result;
+        return (port,ipv4,dir);
     }
 
 }
