@@ -5,20 +5,39 @@ using System.IO;
 using static System.Console;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 using static System.ValueTuple;
-namespace host;
+
+namespace host.client;
 /// <summary>
 /// Client side of the FOSSYNC.
 /// </summary>
 public class client
 {
+    //Socket to connecting to the server 
+    Socket sSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
+    
     public void StartClientThread(){
         ThreadStart client_ext = new ThreadStart(StartClient);
         Thread client_thread = new Thread(client_ext);
         client_thread.Start();
+        
+    }
+    public client(){
+        
+        
+    }
+    
+    public bool connect(IPAddress ipv4, int port){
+        try{
+            sSocket.Connect(ipv4,port);
+            return true;
+        }
+        catch{
+            return false;
+        }
     }
 
-   
     /// <summary>
     /// Starting client side of the FOSSync
     /// </summary>
@@ -33,7 +52,7 @@ public class client
         }
         var info = getInfoFromPath(path1);
         
-        Socket sSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
+        
         try{
             sSocket.Connect(info.ipv4,info.port);
             string message ="<SOF>Witaj ziemniaku !<EOF>";

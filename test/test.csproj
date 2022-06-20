@@ -20,8 +20,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference 
-      Include="../client/client.csproj" />
+    <ProjectReference Include="../client/client.csproj"/>
+    <ProjectReference Include="../server/server.csproj"/>
   </ItemGroup>
 
 </Project>

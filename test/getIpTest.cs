@@ -1,5 +1,5 @@
 using Xunit;
-using host;
+using host.client;
 using System.Net;
 using System;
 namespace clienttest;
@@ -74,11 +74,10 @@ public class pathtest
     public void getIpFromPatch_ValueTest(string path, string expected){
         // arrange
         var cli = new client();
-        object[] arr = new object[3];
         string result = "";
         // act
-        arr = cli.getInfoFromPath(path);
-        result = $"{arr[0].ToString()},{arr[1].ToString()},{arr[2].ToString()}";
+        (int port, IPAddress ipv4, string dir) = cli.getInfoFromPath(path);
+        result = $"{ipv4.ToString()},{port.ToString()},{dir.ToString()}";
 
         // arrange 
         Assert.Equal(expected,result);
