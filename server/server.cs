@@ -55,23 +55,32 @@ public class server:servamp
 
     
 
-
+    
     int requestHandler(ref Socket handler){
         // Get command from client 
         string data = receiveText(ref handler);
         // validating command syntax 
         string commandPattern = @"<COMMAND>\w*</COMMAND>";
-        string command = Regex.Match(data,commandPattern).Value;
-        Trace.WriteLineIf(traceSwitch.TraceInfo,$"Got command {data}");
-        // Respond OK | DENY 
-        switch(command){
-            case "<COMMAND>TEST</COMMAND>":
+        bool isCommand = Regex.IsMatch(data,commandPattern);
+        if(isCommand){
+            
+            string command = Regex.Match(data,commandPattern).Value;
+            command = command.Substring(9,command.Length-19);
+            Trace.WriteLineIf(traceSwitch.TraceInfo,$"Server got command {command}");
+            // Respond OK | DENY 
+            switch(command){
+            case "TEST":
             WriteLine("Its test command !\n Hello world !");
             break;
+            }
+            sendText(ref handler,"OK");
+            return 0;
         }
-        sendText(ref handler,"OK");
+        sendText(ref handler,"DENY");
+        
+        
         // 
-        return 0;
+        return -1;
     }
 
     /// <summary>
