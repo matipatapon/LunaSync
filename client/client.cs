@@ -12,11 +12,8 @@ namespace host.client;
 /// <summary>
 /// Client side of the FOSSYNC.
 /// </summary>
-public class client
-{
-    //Socket to connecting to the server 
-    Socket sSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
-    
+public class client:servamp
+{   
     public void StartClientThread(){
         ThreadStart client_ext = new ThreadStart(StartClient);
         Thread client_thread = new Thread(client_ext);
@@ -24,16 +21,19 @@ public class client
         
     }
     public client(){
-        
+      StartClientThread();
         
     }
     
     public bool connect(IPAddress ipv4, int port){
         try{
+            Trace.WriteIf(traceSwitch.TraceInfo,"Client trying connect to the server !");
             sSocket.Connect(ipv4,port);
+            Trace.WriteIf(traceSwitch.TraceInfo,"Client connected to the server");
             return true;
         }
         catch{
+            Trace.WriteIf(traceSwitch.TraceError,"Clien't couldnt't connect to the server");
             return false;
         }
     }
@@ -54,10 +54,10 @@ public class client
         
         
         try{
-            sSocket.Connect(info.ipv4,info.port);
+            connect(info.ipv4,info.port);
             string message ="<SOF>Witaj ziemniaku !<EOF>";
             byte[] bytek = Encoding.ASCII.GetBytes(message);
-            sSocket.Send(bytek);
+            sendText(ref sSocket,"<COMMAND>TEST</COMMAND><EOF>");
         }
         catch(SocketException e){
             WriteLine($"Failed to connect error {e.ErrorCode}");

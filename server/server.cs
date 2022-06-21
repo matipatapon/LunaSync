@@ -8,26 +8,19 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 namespace host.server;
 
-public class server:servent
+public class server:servamp
 {
-    //Socket to get connection from the client 
-    private Socket lSocket= new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
     
-    TraceSwitch traceSwitch;
-
-
+    
     public server(int port = 0){
         
-        //Setting up Trace level
-        traceSwitch = new TraceSwitch("TraceServer","Level of trace messages");
-        traceSwitch.Level = TraceLevel.Info;
+        
         Trace.WriteLineIf(traceSwitch.TraceVerbose,"Entering server constructor !");
         Trace.WriteLineIf(traceSwitch.TraceInfo,$"Setting traceSwitch of the server to {traceSwitch.Level.ToString()}");
         
         IPEndPoint ep = new IPEndPoint(IPAddress.Any,port);
-        lSocket.Bind(ep);
-        lSocket.Listen(2);
+        sSocket.Bind(ep);
+        sSocket.Listen(2);
         WriteLine($"Server started listening on port {getPort().ToString()}");
         
         Trace.WriteLineIf(traceSwitch.TraceInfo,$"Starting server thread !");
@@ -35,19 +28,26 @@ public class server:servent
         
     }
     /// <summary>
-    /// Return port number of the lSocket 
+    /// Return port number of the sSocket 
     /// </summary>
-    /// <returns>Return port number of the lSocket. If there is no port return 0</returns>
+    /// <returns>Return port number of the sSocket. If there is no port return 0</returns>
     public int getPort(){
-        if(lSocket is not null && lSocket.LocalEndPoint is not null){
-        int port =  ((IPEndPoint)lSocket.LocalEndPoint).Port;
+        if(sSocket is not null && sSocket.LocalEndPoint is not null){
+        int port =  ((IPEndPoint)sSocket.LocalEndPoint).Port;
             return port;
         }
         return 0;
         
     }
 
+
+    enum commands{
+        TEST
+    }
     public void StartServerThread(){
+        string x = $"{commands.TEST.ToString()}";
+        var bytes = Encoding.ASCII.GetBytes(x);
+        WriteLine($"char have {bytes.Count()} bytes");
         ThreadStart server_ext= new ThreadStart(StartServer);
         Thread server_thread = new Thread(server_ext);
         server_thread.Start();
@@ -56,18 +56,20 @@ public class server:servent
     
 
 
-    int requestHandler(Socket handler){
+    int requestHandler(ref Socket handler){
         // Get command from client 
-        string command = receiveData(handler);
+        string data = receiveText(ref handler);
         // validating command syntax 
-        string pattern = @"<\w*>";
-        bool isOk = Regex.IsMatch(command,pattern);
-        Trace.WriteLineIf(traceSwitch.TraceInfo,$"Got command {command}");
+        string commandPattern = @"<COMMAND>\w*</COMMAND>";
+        string command = Regex.Match(data,commandPattern).Value;
+        Trace.WriteLineIf(traceSwitch.TraceInfo,$"Got command {data}");
         // Respond OK | DENY 
         switch(command){
-
+            case "<COMMAND>TEST</COMMAND>":
+            WriteLine("Its test command !\n Hello world !");
+            break;
         }
-        sendData(handler,"OK");
+        sendText(ref handler,"OK");
         // 
         return 0;
     }
@@ -75,22 +77,17 @@ public class server:servent
     /// <summary>
     /// Setting up and starting the server 
     /// </summary>
-    void StartServer(){
-    lSocket.ReceiveTimeout = 5000;
+    public void StartServer(){
+    sSocket.ReceiveTimeout = 5000;
     //Listen For incoming data !
     do{
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for connection !");
-        Socket handler = lSocket.Accept();
+        Socket handler = sSocket.Accept();
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Connected!");
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for command !");
-        requestHandler(handler);
+        requestHandler(ref handler);
  
     }while(true);
-    }
-
-    byte[] ReceiveData(){
-
-        return new byte[1_048_578];
     }
 
 }

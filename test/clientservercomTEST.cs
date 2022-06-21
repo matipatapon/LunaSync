@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System;
 namespace clienttest;
 public class connectionTEST{
+    
     [Fact]
     public void connect_to_server_SUCCESS()
     {
@@ -22,13 +23,5 @@ public class connectionTEST{
     
         // assert
         Assert.Equal(connected,true);
-    }
-    [Fact]
-    public void sendData_to_server_SUCCESS(){
-        // arrange 
-        var serv = new server();
-        var cli = new client();
-        // act 
-        
     }
 }
