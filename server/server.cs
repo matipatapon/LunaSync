@@ -72,11 +72,16 @@ public class server:servamp
             case "TEST":
             WriteLine("Its test command !\n Hello world !");
             break;
+            case "SETDIR":
+                WriteLine($"GOTTED {data}");
+            break;
+            
             }
-            sendText(ref handler,"OK");
+
+            sendText(ref handler,"OK<EOF>");
             return 0;
         }
-        sendText(ref handler,"DENY");
+        sendText(ref handler,"DENY<EOF>");
         
         
         // 
