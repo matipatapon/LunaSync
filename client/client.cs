@@ -7,7 +7,7 @@ using System.Threading;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using static System.ValueTuple;
-
+using host.handler;
 namespace host.client;
 /// <summary>
 /// Client side of the FOSSYNC.
@@ -151,58 +151,4 @@ public class client
 
 }
 
-/// <summary>
-/// Handler for server connection
-/// </summary>
-class serverhandler{
-    private Socket sSocket;
-    public serverhandler(IPAddress ipv4,int port,string dir){
-        
-        sSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp); 
-        IPEndPoint ep = new IPEndPoint(ipv4,port); 
-        sSocket.Connect(ep);
-        sendText($"<COMMAND>SETDIR</COMMAND><DATA>{dir}</DATA><EOF>");
-        string response = receiveText();
-        response = response.Substring(0,response.Length-5);
-        switch(response){
-            case "OK":
-                Trace.WriteLineIf(true,$"Server successfully set dir to {dir}");
-            break;
-            case "DENY":
-                Trace.WriteLineIf(true,$"Server couldn't set dir to {dir}");
-            throw new ArgumentException($"Server couldn't set dir to {dir}");
-            
-        }
-    }
 
-     public string receiveText()
-    {
-        if(sSocket is null){
-            throw new ArgumentNullException("Socket is null !");
-        }
-        string data = "";
-        string end = "";
-        int count = 0;
-        do{
-            try{
-            byte[] bytes = new byte[1024];
-            count = sSocket.Receive(bytes);
-            data += Encoding.ASCII.GetString(bytes,0,count);
-            end = data.Substring(data.Length-5,5);
-            }
-            catch(SocketException e){
-                Trace.WriteLineIf(true,$"Receive error : {e}");
-                break;
-            }
-        }while(count!=0 && end != "<EOF>");
-        return data;
-    }    
-    public void sendText(string data){
-        if(sSocket is null){
-            throw new ArgumentNullException("Socket is null !");
-        }
-        var bytes = Encoding.ASCII.GetBytes(data);
-        sSocket.Send(bytes);
-
-    }
-}

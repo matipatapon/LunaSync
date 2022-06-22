@@ -7,21 +7,5 @@ using System;
 namespace clienttest;
 public class connectionTEST{
     
-    [Fact]
-    public void connect_to_server_SUCCESS()
-    {
-        // arrange
-        var serv = new server();
-        var cli = new client();
-        byte[] addr = new byte[4];
-        addr[0] = 127;
-        addr[3] = 1;
-        IPAddress ip = new IPAddress(addr);
-        int port = serv.getPort();
-        // act
-        bool connected = cli.connect(ip,port);
-    
-        // assert
-        Assert.Equal(connected,true);
-    }
+
 }

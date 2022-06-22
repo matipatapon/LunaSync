@@ -6,23 +6,19 @@ using System.Threading;
 using static System.Console;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using host.handler;
 namespace host.server;
 
 public class server:servamp
 {
     
-    
+    clienthandler handler;
     public server(int port = 0){
         
         
         Trace.WriteLineIf(traceSwitch.TraceVerbose,"Entering server constructor !");
         Trace.WriteLineIf(traceSwitch.TraceInfo,$"Setting traceSwitch of the server to {traceSwitch.Level.ToString()}");
-        
-        IPEndPoint ep = new IPEndPoint(IPAddress.Any,port);
-        sSocket.Bind(ep);
-        sSocket.Listen(2);
-        WriteLine($"Server started listening on port {getPort().ToString()}");
-        
+       
         Trace.WriteLineIf(traceSwitch.TraceInfo,$"Starting server thread !");
         StartServerThread();
         
@@ -32,11 +28,7 @@ public class server:servamp
     /// </summary>
     /// <returns>Return port number of the sSocket. If there is no port return 0</returns>
     public int getPort(){
-        if(sSocket is not null && sSocket.LocalEndPoint is not null){
-        int port =  ((IPEndPoint)sSocket.LocalEndPoint).Port;
-            return port;
-        }
-        return 0;
+        return handler.getPort();
         
     }
 
@@ -56,9 +48,9 @@ public class server:servamp
     
 
     
-    int requestHandler(ref Socket handler){
+    int requestHandler(){
         // Get command from client 
-        string data = receiveText(ref handler);
+        string data = handler.receiveText();
         // validating command syntax 
         string commandPattern = @"<COMMAND>\w*</COMMAND>";
         bool isCommand = Regex.IsMatch(data,commandPattern);
@@ -78,10 +70,10 @@ public class server:servamp
             
             }
 
-            sendText(ref handler,"OK<EOF>");
+            handler.sendText("OK<EOF>");
             return 0;
         }
-        sendText(ref handler,"DENY<EOF>");
+        handler.sendText("DENY<EOF>");
         
         
         // 
@@ -92,14 +84,14 @@ public class server:servamp
     /// Setting up and starting the server 
     /// </summary>
     public void StartServer(){
-    sSocket.ReceiveTimeout = 5000;
+    
     //Listen For incoming data !
     do{
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for connection !");
-        Socket handler = sSocket.Accept();
+        handler = new clienthandler();
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Connected!");
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for command !");
-        requestHandler(ref handler);
+        requestHandler();
  
     }while(true);
     }
