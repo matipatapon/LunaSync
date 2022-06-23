@@ -9,10 +9,10 @@ using System.Text.RegularExpressions;
 using host.handler;
 namespace host.server;
 
-public class server:servamp
+public class server: settings
 {
     
-    clienthandler handler;
+    clienthandler? handler;
     public server(int port = 0){
         
         
@@ -28,6 +28,11 @@ public class server:servamp
     /// </summary>
     /// <returns>Return port number of the sSocket. If there is no port return 0</returns>
     public int getPort(){
+
+        if (handler is null){
+            throw new ArgumentNullException("handler is null");
+        }
+
         return handler.getPort();
         
     }
@@ -49,6 +54,10 @@ public class server:servamp
 
     
     int requestHandler(){
+
+        if (handler is null){
+            throw new ArgumentNullException("handler is null");
+        }
         // Get command from client 
         string data = handler.receiveText();
         // validating command syntax 

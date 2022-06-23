@@ -12,7 +12,7 @@ namespace host.client;
 /// <summary>
 /// Client side of the FOSSYNC.
 /// </summary>
-public class client
+public class client: settings
 {   
     public void StartClientThread(){
         ThreadStart client_ext = new ThreadStart(StartClient);
@@ -31,9 +31,14 @@ public class client
     void StartClient(){
         WriteLine("Hello there ^^");
         Write("Please enter first dir path : ");
-        string path1 = ReadLine();
+        string? path1 = ReadLine();
         Write("Please enter second dir path : ");
-        string path2 = ReadLine();
+        string? path2 = ReadLine();
+
+        if(path1 is null || path2 is null){
+            throw new ArgumentNullException("Path is null");
+        }
+
         var info1 = getInfoFromPath(path1);
         var info2 = getInfoFromPath(path2);
         serverhandler ser1 = new serverhandler(info1.ipv4,info1.port,info1.dir);
@@ -123,8 +128,13 @@ public class client
     /// </returns>
 
     public (int port, IPAddress ipv4, string dir) getInfoFromPath(string path){
-        var result = new object[3];
+        
+        if(path is null){
+            throw new ArgumentNullException("Path is null !");
+        }
 
+        var result = new object[3];
+        
         //Testing roughly is syntax valid ? 
         string octet = @"((2[0-4][0-9])|(25[0-5])|(1[0-9]{2})|([1-9][0-9])|([0-9]))";
         string pattern = @"^("+octet+@"\.){3}("+octet+@"):(\d*){1,5}/((\w+/)*(\w+)/?)?$";

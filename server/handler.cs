@@ -11,7 +11,7 @@ namespace host.handler;
 /// <summary>
 /// Abstract class for handling connection
 /// </summary>
-abstract public class handler{
+abstract public class handler: settings{
     protected Socket sSocket;
 
     public handler(){
@@ -43,6 +43,8 @@ abstract public class handler{
         }while(count!=0 && end != "<EOF>");
         return data;
     }    
+
+   
     /// <summary>
     /// Send data to the conection as Text
     /// </summary>
@@ -71,14 +73,15 @@ public class serverhandler : handler{
         response = response.Substring(0,response.Length-5);
         switch(response){
             case "OK":
-                Trace.WriteLineIf(true,$"Server successfully set dir to {dir}");
+                Trace.WriteLineIf(traceSwitch.TraceInfo,$"Server successfully set dir to {dir}");
             break;
             case "DENY":
-                Trace.WriteLineIf(true,$"Server couldn't set dir to {dir}");
+                Trace.WriteLineIf(traceSwitch.TraceError,$"Server couldn't set dir to {dir}");
             throw new ArgumentException($"Server couldn't set dir to {dir}");
             
         }
     }
+
 
     
 }

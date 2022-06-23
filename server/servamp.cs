@@ -8,13 +8,12 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 namespace host;
 /// <summary>
-/// Shared functions between client and server
-/// SERVer And clieNT = SERVANT +- SERVAMP
+/// Shared settings between objects 
 /// </summary>
-abstract public class servamp{
+abstract public class settings{
     protected TraceSwitch traceSwitch;
 
-    protected servamp(){
+    protected settings(){
         //Setting up Trace level
         traceSwitch = new TraceSwitch("TraceServer","Level of trace messages");
         traceSwitch.Level = TraceLevel.Info;
