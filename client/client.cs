@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using static System.ValueTuple;
 using host.handler;
+using files;
 namespace host.client;
 /// <summary>
 /// Client side of the FOSSYNC.
@@ -30,6 +31,8 @@ public class client: settings
     /// </summary>
     void StartClient(){
         WriteLine("Hello there ^^");
+        var fhandler = new filehandler("/home/itam");
+        fhandler.LIST();
         Write("Please enter first dir path : ");
         string? path1 = ReadLine();
         Write("Please enter second dir path : ");

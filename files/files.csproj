@@ -5,8 +5,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="../server/server.csproj"/>
-    <ProjectReference Include="../files/files.csproj"/>
-  </ItemGroup>
+
 </Project>
