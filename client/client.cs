@@ -32,7 +32,12 @@ public class client: settings
     void StartClient(){
         WriteLine("Hello there ^^");
         var fhandler = new filehandler("/home/itam");
-        fhandler.LIST();
+        //Test of the LIST()
+        var list = fhandler.LIST();
+        foreach(var f in list){
+            WriteLine($"{f.FullName}");
+        }
+
         Write("Please enter first dir path : ");
         string? path1 = ReadLine();
         Write("Please enter second dir path : ");

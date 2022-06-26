@@ -6,36 +6,35 @@ public class filehandler
 {
     string dir = "";
     
-    List<file> Files;
-
     public filehandler(string dir){
         this.dir = dir;
-
+        
     }
-    public string LIST()
+
+    /// <summary>
+    /// Return list of the files in the current folder
+    /// </summary>
+    /// <returns>List<FileInfo> of files in directory</returns>
+    public List<FileInfo> LIST()
     {   
         var directory = new DirectoryInfo(dir);
-
-        bool exist = directory.Exists;
-
-        WriteLine("Directory exists");
-
-        FileAttributes directoryattributes = directory.Attributes;
+        if(!directory.Exists){
+            throw new DirectoryNotFoundException("Directory doesn't exist");
+        }
         
         var subdir = directory.GetDirectories();
+
+        List<FileInfo> result = new List<FileInfo>();
 
         foreach(var dir in subdir){
             var files = dir.EnumerateFiles();
             
-            foreach(var file in files){
-                WriteLine($"{file.FullName}");
+            foreach(var f in files){    
+                result.Add(f);
             }
         }
-        return "";
+        return result;
     }
     
-}
 
-internal class file{
-    string dir;
 }
