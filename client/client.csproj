@@ -8,5 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="../server/server.csproj"/>
     <ProjectReference Include="../files/files.csproj"/>
+    <ProjectReference Include="../logger/logger.csproj"/>
   </ItemGroup>
 </Project>

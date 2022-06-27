@@ -9,6 +9,7 @@ using System.Diagnostics;
 using static System.ValueTuple;
 using host.handler;
 using files;
+using logger;
 namespace host.client;
 /// <summary>
 /// Client side of the FOSSYNC.
@@ -32,6 +33,8 @@ public class client: settings
     void StartClient(){
         WriteLine("Hello there ^^");
         var fhandler = new filehandler("/home/itam");
+        log.l("Whatever");
+        log.l("Whatever2");
         //Test of the LIST()
         var list = fhandler.LIST();
         foreach(var f in list){
