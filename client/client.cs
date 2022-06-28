@@ -16,7 +16,7 @@ namespace host.client;
 /// </summary>
 public class client: settings
 {   
-    private filehandler? fhandler;
+    
     public void StartClientThread(){
         ThreadStart client_ext = new ThreadStart(StartClient);
         Thread client_thread = new Thread(client_ext);
@@ -39,7 +39,7 @@ public class client: settings
         
         log.l($"Got first path {path1}");
         //Write("Please enter second dir path : ");
-        string path2 = "/home/itam/"; //string? path2 = ReadLine();
+        string path2 = "/home/itam/Downloads"; //string? path2 = ReadLine();
         log.l($"Got second path {path2}");
 
         if(path1 is null || path2 is null){
@@ -50,18 +50,7 @@ public class client: settings
         //var info1 = getInfoFromPath(path1);
        // var info2 = getInfoFromPath(path2);
        // serverhandler ser1 = new serverhandler(info1.ipv4,info1.port,info1.dir);
-        syncFolders();
-    }
-
-    /// <summary>
-    /// Sync folder structure
-    /// </summary>
-    void syncFolders(){
-        log.l("Entering syncFolders");
-        
-        //Check if server have all of the client dirs !
-        var subdir = fhandler.RelativeListDir();
-
+        upDirStruct();
     }
 
     /// <summary>

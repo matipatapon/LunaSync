@@ -49,11 +49,10 @@ public class filehandler
     /// Get string of the relative names of all directories !
     /// </summary>
     /// <param name="path">Path to dictionary</param>
-    /// <param name="action">Action to be executed for every directory</param>
     /// <returns></returns>
-    public List<string> RelativeListDir(string? path = null, Action<string>? action = null){
+    public List<string> RelativeListDir(string? path = null){
         var result = new List<string>();
-        
+
         if(path is null){
             path = this.dir;
         }
@@ -62,7 +61,7 @@ public class filehandler
 
         foreach(var d in directory.EnumerateDirectories()){
             var name = d.FullName.Substring(path.Length-1);
-            log.l($"Found subdirectory {name}");
+            log.l($"Found subdirectory {d.FullName}");
             result.Add(name);
             result.AddRange(RelativeListDir($"{path}{name}/"));
         }
@@ -72,7 +71,10 @@ public class filehandler
         }
 
         return result;
+    }
 
+    public DirectoryInfo getDirectory(){
+        return new DirectoryInfo(this.dir);
     }
     
 }
