@@ -16,6 +16,7 @@ namespace host.client;
 /// </summary>
 public class client: settings
 {   
+    private filehandler? fhandler;
     public void StartClientThread(){
         ThreadStart client_ext = new ThreadStart(StartClient);
         Thread client_thread = new Thread(client_ext);
@@ -31,34 +32,36 @@ public class client: settings
     /// Starting client side of the FOSSync
     /// </summary>
     void StartClient(){
-        WriteLine("Hello there ^^");
-        var fhandler = new filehandler("/home/itam");
-        log.l("Whatever");
-        log.l("Whatever2");
-        //Test of the LIST()
-        var list = fhandler.LIST();
-        foreach(var f in list){
-            WriteLine($"{f.FullName}");
-        }
-
-        Write("Please enter first dir path : ");
-        string? path1 = ReadLine();
-        Write("Please enter second dir path : ");
-        string? path2 = ReadLine();
+        log.l("StartClient()");
+        fhandler = new filehandler("/home/itam");
+        //Write("Please enter first dir path : ");
+        string path1 = "127.0.0.1:50/path1";//<-temp string? path1 = ReadLine();
+        
+        log.l($"Got first path {path1}");
+        //Write("Please enter second dir path : ");
+        string path2 = "/home/itam/"; //string? path2 = ReadLine();
+        log.l($"Got second path {path2}");
 
         if(path1 is null || path2 is null){
+            log.l($"One of the pathes is null !",log.level.error);
             throw new ArgumentNullException("Path is null");
         }
 
-        var info1 = getInfoFromPath(path1);
-        var info2 = getInfoFromPath(path2);
-        serverhandler ser1 = new serverhandler(info1.ipv4,info1.port,info1.dir);
-        
+        //var info1 = getInfoFromPath(path1);
+       // var info2 = getInfoFromPath(path2);
+       // serverhandler ser1 = new serverhandler(info1.ipv4,info1.port,info1.dir);
+        syncFolders();
     }
 
-    public void sandbox(){
-        var data = getInfoFromPath("127.0.0.1:50/home/itam");
-        WriteLine(data.ToString());
+    /// <summary>
+    /// Sync folder structure
+    /// </summary>
+    void syncFolders(){
+        log.l("Entering syncFolders");
+        
+        //Check if server have all of the client dirs !
+        var subdir = fhandler.RelativeListDir();
+
     }
 
     /// <summary>

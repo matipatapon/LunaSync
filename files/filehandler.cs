@@ -11,6 +11,10 @@ public class filehandler
     
     public filehandler(string dir){
         this.dir = dir;
+        //Ensure / is on the end of the path
+        if(this.dir[this.dir.Length-1] != '/'){
+            this.dir+="/";
+        }
         
     }
 
@@ -39,6 +43,34 @@ public class filehandler
         }
         WriteLine();
         return result;
+    }
+
+    /// <summary>
+    /// Get string of the relative names of all directories !
+    /// </summary>
+    /// <returns></returns>
+    public List<string> RelativeListDir(string? path = null){
+        var result = new List<string>();
+
+        if(path is null){
+            path = this.dir;
+        }
+        try{
+        var directory = new DirectoryInfo(path);
+
+        foreach(var d in directory.EnumerateDirectories()){
+            var name = d.FullName.Substring(path.Length-1);
+            log.l($"Found subdirectory {name}");
+            result.Add(name);
+            result.AddRange(RelativeListDir($"{path}{name}/"));
+        }
+        }
+        catch(Exception e){
+            log.l($"Exception in RelativeListDir {e.Message}");
+        }
+
+        return result;
+
     }
     
 }
@@ -80,6 +112,12 @@ public class file{
         WriteLine($"This is {++counterxd} file !");
     }
 
+    public override string ToString(){
+        string result = "";
+        result+="<path>"+this.FullName+"</path>";
+        
+        return "";
+    }
     /// <summary>
     /// Create object from string pattern 
     /// path\t...to be continue
