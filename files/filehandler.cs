@@ -48,10 +48,12 @@ public class filehandler
     /// <summary>
     /// Get string of the relative names of all directories !
     /// </summary>
+    /// <param name="path">Path to dictionary</param>
+    /// <param name="action">Action to be executed for every directory</param>
     /// <returns></returns>
-    public List<string> RelativeListDir(string? path = null){
+    public List<string> RelativeListDir(string? path = null, Action<string>? action = null){
         var result = new List<string>();
-
+        
         if(path is null){
             path = this.dir;
         }
