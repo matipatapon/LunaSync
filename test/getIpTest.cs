@@ -24,15 +24,11 @@ public class pathtest
         Assert.Equal(expected,result.ToString());
     }
     [Theory]
-    [InlineData("127.../home","/home/")]
-    [InlineData(".../home/","/home/")]
-    [InlineData(".../home/","/home/")]
-    [InlineData(".../home/home","/home/home/")]
-    [InlineData("...home/","")]
-    [InlineData(".../home///","")]
-    [InlineData("......","")]
+    [InlineData("127.0.0.1:50/home","/home/")]
+    [InlineData("127.0.0.1:50/home/","/home/")]
+    [InlineData("127.0.0.1:50/home/","/home/")]
+    [InlineData("127.0.0.1:50/home/home","/home/home/")]
     //[InlineData(".../home/.../home","")]
-
     public void get_path_TEST(string path,string expected){
         // arrange 
         var cli = new client();
