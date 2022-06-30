@@ -33,7 +33,7 @@ public class client: settings
     /// </summary>
     void StartClient(){
         log.l("StartClient()");
-        fhandler = new filehandler("/home/itam");
+        fhandler = new filehandler("/home/itam/Desktop/TestZone/");
         //Write("Please enter first dir path : ");
         string path1 = "127.0.0.1:50/path1";//<-temp string? path1 = ReadLine();
         

@@ -20,46 +20,50 @@ public class log{
     private static int max = int.MaxValue-1;
     private static int current = 0;
     static log(){
-        //restart logging file
-        while(true){
-            try{
-                fs = File.OpenWrite(path);
-            break;
-            }
-            catch(System.IO.IOException e){
-                WriteLine($"Error occured during accessing {path} {e.Message}!!! retry in one second !");
-                Thread.Sleep(1000);
-            }
-        }
+
         reset();
     }
 
     private static void reset(){
-        fs.SetLength(0);
-        fs.Flush();
+        using(var fs = File.Open(path,FileMode.Create)){
+
+        }
     }
-    private static FileStream fs;
 
     /// <summary>
     /// Log string to the text 
     /// </summary>
     /// <param name="what">Message to log </param>
     public static void l(string what,level lvl = level.verbose){
+        WriteLine($"Error lvl is {lvl}");
         if(lvl > messagelevel){
             return;
         }
-        try{
-        var bytes = new UTF8Encoding(true).GetBytes(what+"\n");
-        fs.Write(bytes,0,bytes.Count());
-        fs.Flush();
-        current+=1;
-        if(max != 0 && current > max){
-            current = 0;
-            reset();
+        //Try write log to the log file if not retry up to five times !
+        int trycount = 1;
+        while(trycount <= 5){
+            try{
+                using(var fs = File.Open(path,FileMode.Append)){
+                    var bytes = new UTF8Encoding(true).GetBytes(what+"\n");
+                    fs.Write(bytes,0,bytes.Count());
+                    current+=1;
+                }
+                if(max != 0 && current > max){
+                    current = 0;
+                    reset();
+                }
+                break;
+            }
+            catch(IOException e){
+                trycount++;
+                Console.WriteLine($"Error during logging message to the file due to {e.Message} Retry in one second !");
+                Thread.Sleep(1000);
+                continue;
+            }
         }
-        }
-        catch(IOException){
-            Console.WriteLine($"Can't log message to file {what}");
+
+        if(trycount > 5){
+            WriteLine($"Can't write '{what}' to log.txt ");
         }
         
 
