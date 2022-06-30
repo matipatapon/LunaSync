@@ -130,6 +130,25 @@ public class file{
     public file(string x){
         
     }
+    
+    /// <summary>
+    /// Function convert FileInfo/DirectoryInfo to string !!! to be send
+    /// </summary>
+    /// <param name="fear">File(FileInfo) or Directory(DirectoryInfo)</param>
+    /// <typeparam name="TFileType"></typeparam>
+    /// <returns></returns>
+    static public string fileOrDirToString(DirectoryInfo fear){
+        log.l("Entering dirToString !!!");
+    
+        //WriteLine($"I am {fear.FullName}");
+        return "";
+    }
+    static public string fileOrDirToString(FileInfo fear){
+        log.l("Entering file to string !!!");
+
+        WriteLine($"I am a file {fear.FullName}");
+        return "";
+    }
 }
 
 public interface IFileComparable{

@@ -1,5 +1,7 @@
 ﻿using System.IO;
+using static System.Console;
 using System.Text;
+using System.Threading;
 namespace logger;
 /// <summary>
 /// My replacment for Trace 
@@ -19,7 +21,16 @@ public class log{
     private static int current = 0;
     static log(){
         //restart logging file
-        fs = File.OpenWrite(path);
+        while(true){
+            try{
+                fs = File.OpenWrite(path);
+            break;
+            }
+            catch(System.IO.IOException e){
+                WriteLine($"Error occured during accessing {path} {e.Message}!!! retry in one second !");
+                Thread.Sleep(1000);
+            }
+        }
         reset();
     }
 

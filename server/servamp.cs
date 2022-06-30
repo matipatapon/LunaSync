@@ -39,7 +39,14 @@ abstract public class settings{
 
             foreach(var d in dir.EnumerateDirectories()){
             try{
-            log.l($"{d.FullName} found");
+            log.l($"{d.FullName} found link target is {d.LinkTarget}");
+            if(d.LinkTarget is not null){
+                break;
+            }
+                foreach(var f in d.EnumerateFiles()){
+                    log.l($"{f.Name} found");
+                }
+            file.fileOrDirToString(d);
             listdir(d);
             }
             catch(Exception e){
@@ -48,6 +55,8 @@ abstract public class settings{
         }
         }
     }
+
+    
 
     /// <summary>
     /// Download Directory Structure from server/client 

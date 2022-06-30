@@ -50,8 +50,8 @@ public class client: settings
         //var info1 = getInfoFromPath(path1);
         //var info2 = getInfoFromPath(path2);
         //serverhandler ser1 = new serverhandler(info1.ipv4,info1.port,info1.dir);
-        //upDirStruct();
-        fhandler.RelativeListDir("/home/itam");
+        upDirStruct();
+        //fhandler.RelativeListDir("/home/itam");
     }
 
     /// <summary>
