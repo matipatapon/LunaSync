@@ -14,7 +14,7 @@ public class log{
         info,
         verbose
     }
-    private static level messagelevel = level.error;
+    private static level messagelevel = level.verbose;
     
     //how much lines can be in log.txt 0 - disable
     private static int max = int.MaxValue-1;

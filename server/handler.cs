@@ -4,7 +4,6 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using static System.Console;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using logger;
 namespace host.handler;
@@ -30,6 +29,7 @@ public class connectionHandler{
                 }
                 ep = new IPEndPoint(ipv4,port); 
                 sSocket.Connect(ep);
+                /* NOT Handled yet !!!!
                 sendText($"<COMMAND>SETDIR</COMMAND><DATA>{dir}</DATA><EOF>");
                 string response = receiveText();
                 response = response.Substring(0,response.Length-5);
@@ -40,7 +40,7 @@ public class connectionHandler{
                     case "DENY":
                         log.l($"Server couldn't set dir to {dir}",log.level.error);
                         throw new ArgumentException($"Server couldn't set dir to {dir}");
-                }
+                }*/
             break;
             case handlertype.client:
                
@@ -75,7 +75,7 @@ public class connectionHandler{
             end = data.Substring(data.Length-5,5);
             }
             catch(SocketException e){
-                Trace.WriteLineIf(true,$"Receive error : {e}");
+                log.l($"Received error {e}",log.level.error);
                 break;
             }
         }while(count!=0 && end != "<EOF>");

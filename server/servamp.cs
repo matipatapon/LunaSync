@@ -4,7 +4,6 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using static System.Console;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using files;
 using logger;
@@ -14,14 +13,11 @@ namespace host;
 /// Shared settings and functions between objects 
 /// </summary>
 abstract public class hostshared{
-    protected TraceSwitch traceSwitch;
     protected filehandler? fhandler;
     protected connectionHandler? chandler;
 
     protected hostshared(){
-        //Setting up Trace level
-        traceSwitch = new TraceSwitch("TraceServer","Level of trace messages");
-        traceSwitch.Level = TraceLevel.Info;
+
     }
 
     //Syncing two folder structure 
@@ -39,6 +35,11 @@ abstract public class hostshared{
 
         void listdir(DirectoryInfo dir){
 
+            if(chandler is null){
+                log.l("chandler is null !!!",log.level.error);
+                throw new ArgumentNullException("chandler is null !");
+            }
+
             foreach(var d in dir.EnumerateDirectories()){
             try{
             if(d.LinkTarget is not null){
@@ -47,6 +48,8 @@ abstract public class hostshared{
             }
                 foreach(var f in d.EnumerateFiles()){
                     log.l($"{f.Name} found");
+                    chandler.sendText(f.FullName+"<EOF>");
+                    
                 }
             file.fileOrDirToString(d);
             listdir(d);
@@ -56,16 +59,22 @@ abstract public class hostshared{
             }
         }
         }
-    }
-
-    
-
+    }    
     /// <summary>
     /// Download Directory Structure from server/client 
     /// This function will ensure that host have the same structure as
     /// server/client 
     /// </summary>
+    //TODO
+    //It takes all messages of files name as one ... ...
     protected void DownDirStruct(){
-
+        if(chandler is null){
+            log.l("chandler is null !",log.level.error);
+            throw new ArgumentNullException("chandler is null !");
+        }
+        while(true){
+            var x = chandler.receiveText();
+            WriteLine($"Received {x}");
+        }
     }
 }

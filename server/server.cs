@@ -4,21 +4,16 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using static System.Console;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using host.handler;
+using logger;
 namespace host.server;
 
 public class server: hostshared
 {
     
     public server(int port = 0){
-        
-        
-        Trace.WriteLineIf(traceSwitch.TraceVerbose,"Entering server constructor !");
-        Trace.WriteLineIf(traceSwitch.TraceInfo,$"Setting traceSwitch of the server to {traceSwitch.Level.ToString()}");
-       
-        Trace.WriteLineIf(traceSwitch.TraceInfo,$"Starting server thread !");
+        log.l("Starting server thread",log.level.verbose);
         StartServerThread();
         
     }
@@ -41,17 +36,26 @@ public class server: hostshared
         TEST
     }
     public void StartServerThread(){
-        string x = $"{commands.TEST.ToString()}";
-        var bytes = Encoding.ASCII.GetBytes(x);
-        WriteLine($"char have {bytes.Count()} bytes");
         ThreadStart server_ext= new ThreadStart(StartServer);
         Thread server_thread = new Thread(server_ext);
         server_thread.Start();
     }
 
+    /// <summary>
+    /// Setting up and starting the server 
+    /// </summary>
+    public void StartServer(){
     
+    //Listen For incoming data !
+    do{
+        log.l("Server is waiting for connection...",log.level.info);
+        chandler = new connectionHandler(connectionHandler.handlertype.client);
+        log.l("Server is connected !");
+        DownDirStruct();
+ 
+    }while(true);
+    }
 
-    
     int requestHandler(){
 
         if (chandler is null){
@@ -66,7 +70,7 @@ public class server: hostshared
             
             string command = Regex.Match(data,commandPattern).Value;
             command = command.Substring(9,command.Length-19);
-            Trace.WriteLineIf(traceSwitch.TraceInfo,$"Server got command {command}");
+            log.l($"Server got command {command}",log.level.verbose);
             // Respond OK | DENY 
             switch(command){
             case "TEST":
@@ -87,21 +91,4 @@ public class server: hostshared
         // 
         return -1;
     }
-
-    /// <summary>
-    /// Setting up and starting the server 
-    /// </summary>
-    public void StartServer(){
-    
-    //Listen For incoming data !
-    do{
-        Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for connection !");
-        chandler = new connectionHandler(connectionHandler.handlertype.client);
-        Trace.WriteLineIf(traceSwitch.TraceInfo,"Connected!");
-        Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for command !");
-        requestHandler();
- 
-    }while(true);
-    }
-
 }

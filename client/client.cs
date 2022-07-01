@@ -5,7 +5,6 @@ using System.IO;
 using static System.Console;
 using System.Threading;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
 using static System.ValueTuple;
 using host.handler;
 using files;
@@ -33,13 +32,14 @@ public class client: hostshared
     /// </summary>
     void StartClient(){
         log.l("StartClient()");
-        fhandler = new filehandler("/home/itam/Desktop/TestZone/");
         Write("Please enter first dir path : ");
         string? path1 = ReadLine();
         log.l($"Got first path {path1}");
         //Write("Please enter second dir path : ");
-        string path2 = "/home/itam/Downloads"; //string? path2 = ReadLine();
+        string path2 = "/home/itam/"; //string? path2 = ReadLine();
         log.l($"Got second path {path2}");
+        
+        fhandler = new filehandler(path2);
 
         if(path1 is null || path2 is null){
             log.l($"One of the pathes is null !",log.level.error);
@@ -48,7 +48,9 @@ public class client: hostshared
 
         var info1 = getInfoFromPath(path1);
         //var info2 = getInfoFromPath(path2);
+        log.l("Creating chandler in client");
         chandler = new connectionHandler(connectionHandler.handlertype.server,info1.ipv4,info1.port,info1.dir);
+        log.l("Starting syncing files !");
         upDirStruct();
         //fhandler.RelativeListDir("/home/itam");
     }
