@@ -10,13 +10,50 @@ using logger;
 namespace host.handler;
 
 /// <summary>
-/// Abstract class for handling connection
+/// Handle the connection from server/client 
 /// </summary>
-abstract public class handler{
+/// <param name="type">Choose that if will handle connection from server or client</param>
+public class connectionHandler{
     protected Socket sSocket;
+    public enum handlertype{
+        server,
+        client
+    }
 
-    public handler(){
+    public connectionHandler(handlertype type,IPAddress? ipv4 = null,int port = 0 ,string dir = ""){
         sSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp); 
+        IPEndPoint ep;
+        switch(type){
+            case handlertype.server:
+                if(ipv4 is null){
+                    throw new ArgumentNullException("Ipv4 for handler(server) can not be null !");
+                }
+                ep = new IPEndPoint(ipv4,port); 
+                sSocket.Connect(ep);
+                sendText($"<COMMAND>SETDIR</COMMAND><DATA>{dir}</DATA><EOF>");
+                string response = receiveText();
+                response = response.Substring(0,response.Length-5);
+                switch(response){
+                    case "OK":
+                        log.l($"Server successfully set dir to {dir}",log.level.info);
+                    break;
+                    case "DENY":
+                        log.l($"Server couldn't set dir to {dir}",log.level.error);
+                        throw new ArgumentException($"Server couldn't set dir to {dir}");
+                }
+            break;
+            case handlertype.client:
+               
+                ep = new IPEndPoint(IPAddress.Any,0);
+                sSocket.Bind(ep);
+                sSocket.Listen(2);
+                sSocket.ReceiveTimeout = 5000;
+                WriteLine($"Server started listening on port {getPort().ToString()}");
+                sSocket = sSocket.Accept();
+            break;
+            default:
+                throw new ArgumentNullException("handler type can't be null !");
+        }
     }
     /// <summary>
     /// Receiving Text from the connection !
@@ -45,6 +82,13 @@ abstract public class handler{
         return data;
     }    
 
+    public int getPort(){
+        if(sSocket is not null && sSocket.LocalEndPoint is not null){
+        int port =  ((IPEndPoint)sSocket.LocalEndPoint).Port;
+            return port;
+        }
+        return 0;
+    }
    
     /// <summary>
     /// Send data to the conection as Text
@@ -60,47 +104,4 @@ abstract public class handler{
     }
 
 }
-/// <summary>
-/// Handler for server connection
-/// </summary>
-public class serverhandler : handler{
-    
-    public serverhandler(IPAddress ipv4,int port,string dir){
-        
-        IPEndPoint ep = new IPEndPoint(ipv4,port); 
-        sSocket.Connect(ep);
-        sendText($"<COMMAND>SETDIR</COMMAND><DATA>{dir}</DATA><EOF>");
-        string response = receiveText();
-        response = response.Substring(0,response.Length-5);
-        switch(response){
-            case "OK":
-                log.l($"Server successfully set dir to {dir}",log.level.info);
-            break;
-            case "DENY":
-                log.l($"Server couldn't set dir to {dir}",log.level.error);
-            throw new ArgumentException($"Server couldn't set dir to {dir}");
-            
-        }
-    }
 
-
-    
-}
-
-public class clienthandler : handler{
-    public clienthandler(){
-        IPEndPoint ep = new IPEndPoint(IPAddress.Any,0);
-        sSocket.Bind(ep);
-        sSocket.Listen(2);
-        sSocket.ReceiveTimeout = 5000;
-         WriteLine($"Server started listening on port {getPort().ToString()}");
-        sSocket = sSocket.Accept();
-    }
-    public int getPort(){
-        if(sSocket is not null && sSocket.LocalEndPoint is not null){
-        int port =  ((IPEndPoint)sSocket.LocalEndPoint).Port;
-            return port;
-        }
-        return 0;
-    }
-}

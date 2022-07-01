@@ -34,9 +34,8 @@ public class client: hostshared
     void StartClient(){
         log.l("StartClient()");
         fhandler = new filehandler("/home/itam/Desktop/TestZone/");
-        //Write("Please enter first dir path : ");
-        string path1 = "127.0.0.1:50/path1";//<-temp string? path1 = ReadLine();
-        
+        Write("Please enter first dir path : ");
+        string? path1 = ReadLine();
         log.l($"Got first path {path1}");
         //Write("Please enter second dir path : ");
         string path2 = "/home/itam/Downloads"; //string? path2 = ReadLine();
@@ -47,9 +46,9 @@ public class client: hostshared
             throw new ArgumentNullException("Path is null");
         }
 
-        //var info1 = getInfoFromPath(path1);
+        var info1 = getInfoFromPath(path1);
         //var info2 = getInfoFromPath(path2);
-        //serverhandler ser1 = new serverhandler(info1.ipv4,info1.port,info1.dir);
+        chandler = new connectionHandler(connectionHandler.handlertype.server,info1.ipv4,info1.port,info1.dir);
         upDirStruct();
         //fhandler.RelativeListDir("/home/itam");
     }

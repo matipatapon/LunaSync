@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using files;
 using logger;
+using host.handler;
 namespace host;
 /// <summary>
 /// Shared settings and functions between objects 
@@ -15,6 +16,7 @@ namespace host;
 abstract public class hostshared{
     protected TraceSwitch traceSwitch;
     protected filehandler? fhandler;
+    protected connectionHandler? chandler;
 
     protected hostshared(){
         //Setting up Trace level

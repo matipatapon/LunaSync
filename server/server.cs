@@ -12,7 +12,6 @@ namespace host.server;
 public class server: hostshared
 {
     
-    clienthandler? handler;
     public server(int port = 0){
         
         
@@ -29,11 +28,11 @@ public class server: hostshared
     /// <returns>Return port number of the sSocket. If there is no port return 0</returns>
     public int getPort(){
 
-        if (handler is null){
+        if (chandler is null){
             throw new ArgumentNullException("handler is null");
         }
 
-        return handler.getPort();
+        return chandler.getPort();
         
     }
 
@@ -55,11 +54,11 @@ public class server: hostshared
     
     int requestHandler(){
 
-        if (handler is null){
+        if (chandler is null){
             throw new ArgumentNullException("handler is null");
         }
         // Get command from client 
-        string data = handler.receiveText();
+        string data = chandler.receiveText();
         // validating command syntax 
         string commandPattern = @"<COMMAND>\w*</COMMAND>";
         bool isCommand = Regex.IsMatch(data,commandPattern);
@@ -79,10 +78,10 @@ public class server: hostshared
             
             }
 
-            handler.sendText("OK<EOF>");
+            chandler.sendText("OK<EOF>");
             return 0;
         }
-        handler.sendText("DENY<EOF>");
+        chandler.sendText("DENY<EOF>");
         
         
         // 
@@ -97,7 +96,7 @@ public class server: hostshared
     //Listen For incoming data !
     do{
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for connection !");
-        handler = new clienthandler();
+        chandler = new connectionHandler(connectionHandler.handlertype.client);
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Connected!");
         Trace.WriteLineIf(traceSwitch.TraceInfo,"Waiting for command !");
         requestHandler();
