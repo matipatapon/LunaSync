@@ -10,13 +10,13 @@ using files;
 using logger;
 namespace host;
 /// <summary>
-/// Shared settings between objects 
+/// Shared settings and functions between objects 
 /// </summary>
-abstract public class settings{
+abstract public class hostshared{
     protected TraceSwitch traceSwitch;
     protected filehandler? fhandler;
 
-    protected settings(){
+    protected hostshared(){
         //Setting up Trace level
         traceSwitch = new TraceSwitch("TraceServer","Level of trace messages");
         traceSwitch.Level = TraceLevel.Info;
@@ -39,8 +39,8 @@ abstract public class settings{
 
             foreach(var d in dir.EnumerateDirectories()){
             try{
-            log.l($"{d.FullName} found link target is {d.LinkTarget}");
             if(d.LinkTarget is not null){
+                log.l($"{d} is link skipping",log.level.info);
                 break;
             }
                 foreach(var f in d.EnumerateFiles()){

@@ -14,7 +14,7 @@ namespace host.client;
 /// <summary>
 /// Client side of the FOSSYNC.
 /// </summary>
-public class client: settings
+public class client: hostshared
 {   
     
     public void StartClientThread(){

@@ -35,7 +35,6 @@ public class log{
     /// </summary>
     /// <param name="what">Message to log </param>
     public static void l(string what,level lvl = level.verbose){
-        WriteLine($"Error lvl is {lvl}");
         if(lvl > messagelevel){
             return;
         }
@@ -56,7 +55,7 @@ public class log{
             }
             catch(IOException e){
                 trycount++;
-                Console.WriteLine($"Error during logging message to the file due to {e.Message} Retry in one second !");
+                WriteLine($"Error during logging message to the file due to {e.Message} Retry in one second !");
                 Thread.Sleep(1000);
                 continue;
             }

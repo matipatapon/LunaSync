@@ -6,12 +6,13 @@ using System.Threading;
 using static System.Console;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using logger;
 namespace host.handler;
 
 /// <summary>
 /// Abstract class for handling connection
 /// </summary>
-abstract public class handler: settings{
+abstract public class handler{
     protected Socket sSocket;
 
     public handler(){
@@ -73,10 +74,10 @@ public class serverhandler : handler{
         response = response.Substring(0,response.Length-5);
         switch(response){
             case "OK":
-                Trace.WriteLineIf(traceSwitch.TraceInfo,$"Server successfully set dir to {dir}");
+                log.l($"Server successfully set dir to {dir}",log.level.info);
             break;
             case "DENY":
-                Trace.WriteLineIf(traceSwitch.TraceError,$"Server couldn't set dir to {dir}");
+                log.l($"Server couldn't set dir to {dir}",log.level.error);
             throw new ArgumentException($"Server couldn't set dir to {dir}");
             
         }

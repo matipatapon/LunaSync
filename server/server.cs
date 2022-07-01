@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using host.handler;
 namespace host.server;
 
-public class server: settings
+public class server: hostshared
 {
     
     clienthandler? handler;
