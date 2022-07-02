@@ -55,6 +55,11 @@ public class connectionHandler{
                 throw new ArgumentNullException("handler type can't be null !");
         }
     }
+
+    ~connectionHandler(){
+        sSocket.Shutdown(SocketShutdown.Both);
+        sSocket.Close();
+    }
     /// <summary>
     /// Receiving Text from the connection !
     /// </summary>
@@ -100,6 +105,42 @@ public class connectionHandler{
         }
         var bytes = Encoding.ASCII.GetBytes(data);
         sSocket.Send(bytes);
+
+    }
+
+    public void sendFile(string path,string subdir){
+        if(sSocket is null){
+            throw new ArgumentNullException("Socket is null !");
+        }
+        log.l($"Sending file ! Subdir '{subdir}'");
+        //First send info about file 
+        sendText("<SUBDIR></SUBDIR>");
+        sSocket.SendFile("/home/itam/Desktop/listmot.odt");
+          
+
+
+    }
+
+    public void receiveFile(string path){
+        if(sSocket is null){
+            throw new ArgumentNullException("Socket is null !");
+        }
+        using(var temp = File.Create("../temp")){
+            int sizeOfBuffer = 1024;
+            var buffer = new byte[sizeOfBuffer];
+            while(buffer.Length != 0){
+                try{
+                int count = sSocket.Receive(buffer);
+                temp.Write(buffer,0,count);
+                }
+                //If timeout !!! or other SocketException
+                catch(SocketException e){
+                    log.l(e.Message,log.level.error);
+                    break;
+                }
+            }
+        }
+    
 
     }
 

@@ -52,6 +52,7 @@ public class server: hostshared
         chandler = new connectionHandler(connectionHandler.handlertype.client);
         log.l("Server is connected !");
         DownDirStruct();
+        upDirStruct();
  
     }while(true);
     }

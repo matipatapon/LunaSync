@@ -29,16 +29,20 @@ abstract public class hostshared{
     /// </summary>
     protected void upDirStruct(){
 
+        if(chandler is null){
+            log.l("chandler is null !!!",log.level.error);
+            throw new ArgumentNullException("chandler is null !");
+        }
+        if(fhandler is null){
+            log.l("fhandler is null !!!",log.level.error);
+            throw new ArgumentNullException("fhandler is null !");
+        }
+
         var dir = fhandler.getDirectory();
 
-        listdir(dir);
+        enumerateThroughSubdirs(dir);
 
-        void listdir(DirectoryInfo dir){
-
-            if(chandler is null){
-                log.l("chandler is null !!!",log.level.error);
-                throw new ArgumentNullException("chandler is null !");
-            }
+        void enumerateThroughSubdirs(DirectoryInfo dir){
 
             foreach(var d in dir.EnumerateDirectories()){
             try{
@@ -48,17 +52,20 @@ abstract public class hostshared{
             }
                 foreach(var f in d.EnumerateFiles()){
                     log.l($"{f.Name} found");
-                    chandler.sendText(f.FullName+"<EOF>");
+                    chandler.sendFile(f.FullName,"idkyet");
+                    var x = chandler.receiveText();
+                    WriteLine($"Client received {x}");
                     
                 }
             file.fileOrDirToString(d);
-            listdir(d);
+            enumerateThroughSubdirs(d);
             }
             catch(Exception e){
             log.l($"{e.Message} Exception",log.level.error);
             }
         }
         }
+        chandler.sendText("<END><EOF>");
     }    
     /// <summary>
     /// Download Directory Structure from server/client 
@@ -68,6 +75,7 @@ abstract public class hostshared{
     //TODO
     //It takes all messages of files name as one ... ...
     protected void DownDirStruct(){
+        chandler.receiveFile("/home/itam");
         if(chandler is null){
             log.l("chandler is null !",log.level.error);
             throw new ArgumentNullException("chandler is null !");
@@ -75,6 +83,11 @@ abstract public class hostshared{
         while(true){
             var x = chandler.receiveText();
             WriteLine($"Received {x}");
+            if(x == "<END><EOF>"){
+                WriteLine("END!!#$!@$@!");
+                break;
+            }
+            chandler.sendText("OK<EOF>");
         }
     }
 }
