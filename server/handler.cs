@@ -84,7 +84,8 @@ public class connectionHandler{
                 break;
             }
         }while(count!=0 && end != "<EOF>");
-        return data;
+        //Argument out of range exception
+        return data.Substring(0,data.Length-5);
     }    
 
     public int getPort(){
@@ -103,7 +104,7 @@ public class connectionHandler{
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
         }
-        var bytes = Encoding.ASCII.GetBytes(data);
+        var bytes = Encoding.ASCII.GetBytes(data+"<EOF>");
         sSocket.Send(bytes);
 
     }
@@ -138,6 +139,9 @@ public class connectionHandler{
                     log.l(e.Message,log.level.error);
                     break;
                 }
+                var response = receiveText();
+                
+
             }
         }
     

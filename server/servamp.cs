@@ -52,6 +52,7 @@ abstract public class hostshared{
             }
                 foreach(var f in d.EnumerateFiles()){
                     log.l($"{f.Name} found");
+                    var tofi = new file(f.FullName,dir.FullName);
                     chandler.sendFile(f.FullName,"idkyet");
                     var x = chandler.receiveText();
                     WriteLine($"Client received {x}");
@@ -65,7 +66,7 @@ abstract public class hostshared{
             }
         }
         }
-        chandler.sendText("<END><EOF>");
+        chandler.sendText("<END>");
     }    
     /// <summary>
     /// Download Directory Structure from server/client 
@@ -83,7 +84,7 @@ abstract public class hostshared{
         while(true){
             var x = chandler.receiveText();
             WriteLine($"Received {x}");
-            if(x == "<END><EOF>"){
+            if(x == "<END>"){
                 WriteLine("END!!#$!@$@!");
                 break;
             }

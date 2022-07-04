@@ -38,7 +38,7 @@ public class filehandler
             var files = dir.EnumerateFiles();
             
             foreach(var f in files){    
-                result.Add(new file(f));
+                result.Add(new file(f.FullName,this.dir));
             }
         }
         WriteLine();
@@ -80,14 +80,17 @@ public class filehandler
 }
 
 /// <summary>
-/// File 
+/// file object get info about file !!! 
 /// </summary>
 public class file{
-    public string FullName = string.Empty;
-    bool read = true;
-    bool write;
+    readonly public string FullName = string.Empty;
+    readonly public string Name = string.Empty;
+    readonly public string localPath = string.Empty;
+    readonly byte[] hash = new byte[16];
+    readonly public bool read = true;
+    readonly public bool write;
 
-    static int counterxd = 0;
+
 
     /// <summary>
     /// Get hash of the file
@@ -110,10 +113,23 @@ public class file{
     /// Create instance from FileInfo object
     /// </summary>
     /// <param name="x">FileInfo instance</param>
-    public file(FileInfo fi){
+    public file(string path,string dir){
+        var fi = new FileInfo(path);
         this.FullName = fi.FullName;
-        this.getHash();
-        WriteLine($"This is {++counterxd} file !");
+        this.hash = this.getHash();
+        this.Name = fi.Name;
+        this.localPath = FullName.Substring(dir.Length,FullName.Length-dir.Length);
+        int attributes = (int)File.GetAttributes(path);
+        int test = 4;
+        attributes = attributes|test;
+        log.l($"Collected info about file : \n "+
+        $"Name : {this.Name}\n"+
+        $"FullName : {this.FullName}\n"+
+        $"localPath : {this.localPath}\n"+
+        $"hash : {BitConverter.ToString(this.hash).Replace("-","")}\n"+
+        $"Fileattributes : {Convert.ToString(attributes,2)} and it's type is {attributes.GetType().ToString()}");
+        
+        
     }
 
     public override string ToString(){
@@ -122,14 +138,7 @@ public class file{
         
         return "";
     }
-    /// <summary>
-    /// Create object from string pattern 
-    /// path\t...to be continue
-    /// </summary>
-    /// <param name="x">(string)info about file</param>
-    public file(string x){
-        
-    }
+
     
     /// <summary>
     /// Function convert FileInfo/DirectoryInfo to string !!! to be send
