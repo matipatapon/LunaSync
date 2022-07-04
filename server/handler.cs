@@ -6,6 +6,7 @@ using System.Threading;
 using static System.Console;
 using System.Text.RegularExpressions;
 using logger;
+using files;
 namespace host.handler;
 
 /// <summary>
@@ -44,7 +45,7 @@ public class connectionHandler{
             break;
             case handlertype.client:
                
-                ep = new IPEndPoint(IPAddress.Any,0);
+                ep = new IPEndPoint(IPAddress.Any,6666);
                 sSocket.Bind(ep);
                 sSocket.Listen(2);
                 sSocket.ReceiveTimeout = 5000;
@@ -85,7 +86,13 @@ public class connectionHandler{
             }
         }while(count!=0 && end != "<EOF>");
         //Argument out of range exception
+        if(end == "<EOF>"){
         return data.Substring(0,data.Length-5);
+        }
+        else{
+            log.l($"receiveText error received message don't end with <EOF> !!!");
+            return data;
+        }
     }    
 
     public int getPort(){
@@ -109,20 +116,30 @@ public class connectionHandler{
 
     }
 
-    public void sendFile(string path,string subdir){
+    public void sendFile(FileInfo fi,DirectoryInfo dir){
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
         }
-        log.l($"Sending file ! Subdir '{subdir}'");
+        log.l($"Sending file");
         //First send info about file 
-        sendText("<SUBDIR></SUBDIR>");
+        var info = new file(fi.FullName,dir.FullName);
+
+        sendText(info.ToString());
+
+        var response = receiveText();
+
+        //Send file 
         sSocket.SendFile("/home/itam/Desktop/listmot.odt");
-          
+        
+        response = receiveText();
 
 
     }
 
     public void receiveFile(string path){
+        //get info 
+
+        var info = receiveText();
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
         }

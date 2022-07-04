@@ -33,7 +33,7 @@ public class client: hostshared
     void StartClient(){
         log.l("StartClient()");
         Write("Please enter first dir path : ");
-        string? path1 = ReadLine();
+        string? path1 = "127.0.0.1:6666/"; //ReadLine();
         log.l($"Got first path {path1}");
         //Write("Please enter second dir path : ");
         string path2 = "/home/itam/"; //string? path2 = ReadLine();

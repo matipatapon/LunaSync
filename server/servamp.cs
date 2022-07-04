@@ -52,13 +52,9 @@ abstract public class hostshared{
             }
                 foreach(var f in d.EnumerateFiles()){
                     log.l($"{f.Name} found");
-                    var tofi = new file(f.FullName,dir.FullName);
-                    chandler.sendFile(f.FullName,"idkyet");
-                    var x = chandler.receiveText();
-                    WriteLine($"Client received {x}");
+                    chandler.sendFile(f,dir);
                     
                 }
-            file.fileOrDirToString(d);
             enumerateThroughSubdirs(d);
             }
             catch(Exception e){
@@ -76,18 +72,24 @@ abstract public class hostshared{
     //TODO
     //It takes all messages of files name as one ... ...
     protected void DownDirStruct(){
-        chandler.receiveFile("/home/itam");
         if(chandler is null){
             log.l("chandler is null !",log.level.error);
             throw new ArgumentNullException("chandler is null !");
         }
         while(true){
-            var x = chandler.receiveText();
-            WriteLine($"Received {x}");
-            if(x == "<END>"){
+            //Get info about file !
+            var info = chandler.receiveText();
+            if(info == "<END>"){
                 WriteLine("END!!#$!@$@!");
                 break;
             }
+            var bar = new file(info:info);
+            WriteLine($"Received object {info.ToString()}");
+            //Send response 
+            chandler.sendText("OK");
+            //Get file
+            chandler.receiveFile("/home/itam");
+            //Send response 
             chandler.sendText("OK<EOF>");
         }
     }

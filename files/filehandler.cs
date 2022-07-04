@@ -83,13 +83,13 @@ public class filehandler
 /// file object get info about file !!! 
 /// </summary>
 public class file{
-    readonly public string FullName = string.Empty;
-    readonly public string Name = string.Empty;
+    readonly public string fullName = string.Empty;
+    readonly public string name = string.Empty;
     readonly public string localPath = string.Empty;
     readonly byte[] hash = new byte[16];
-    readonly public bool read = true;
-    readonly public bool write;
-
+    long size = 0;
+    long wTimeTicks = 0;
+    FileAttributes attributes = 0;
 
 
     /// <summary>
@@ -99,7 +99,7 @@ public class file{
     byte[] getHash(){
         var md5 = MD5.Create();
         try{
-            var stream = new FileInfo(this.FullName).OpenRead();
+            var stream = new FileInfo(this.fullName).OpenRead();
             return (md5.ComputeHash(stream));
         }
         catch(UnauthorizedAccessException){
@@ -113,51 +113,104 @@ public class file{
     /// Create instance from FileInfo object
     /// </summary>
     /// <param name="x">FileInfo instance</param>
-    public file(string path,string dir){
-        var fi = new FileInfo(path);
-        this.FullName = fi.FullName;
-        this.hash = this.getHash();
-        this.Name = fi.Name;
-        this.localPath = FullName.Substring(dir.Length,FullName.Length-dir.Length);
-        int attributes = (int)File.GetAttributes(path);
-        int test = 4;
-        attributes = attributes|test;
-        log.l($"Collected info about file : \n "+
-        $"Name : {this.Name}\n"+
-        $"FullName : {this.FullName}\n"+
-        $"localPath : {this.localPath}\n"+
-        $"hash : {BitConverter.ToString(this.hash).Replace("-","")}\n"+
-        $"Fileattributes : {Convert.ToString(attributes,2)} and it's type is {attributes.GetType().ToString()}");
-        
-        
+    public file(string? path = null,string? dir = null , string? info = null){
+        //file object can be created for two metohds 
+        //1) get path and dir 
+        //2) get file object as string then convert it do file object
+        if(path is not null && dir is not null){
+            var fi = new FileInfo(path);
+            this.fullName = fi.FullName;
+            this.hash = this.getHash();
+            this.name = fi.Name;
+            this.localPath = fullName.Substring(dir.Length,fullName.Length-dir.Length);
+            this.attributes = File.GetAttributes(path);
+            this.size = fi.Length;
+            this.wTimeTicks = fi.LastWriteTime.Ticks;
+            log.l($"Collected info about file : {this.ToString()}");
+        }
+        else if (info is not null){
+            string attrname = "";
+        string value = "";
+        int phase = 0;
+        //I think regex would take more space.
+            foreach(char c in info){
+                
+                switch(phase){
+                    case 0:
+                        if(c == '>'){
+                            phase++;
+                        }
+                        else if(c != '<'){
+                            attrname += c;
+                        }
+                    break;
+                    case 1:
+                        if(c == '<'){
+                            phase++;
+                        
+                        }
+                        else{
+                            value+=c;
+                        }
+                    break;
+                    case 2:
+                        if(c == '>'){
+                            switch(name){
+                                case "fullName":
+                                    this.fullName = value;
+                                break;
+                                case "name":
+                                    this.name = value;
+                                break;
+                                case "localPath":
+                                    this.localPath = value;
+                                break;
+                                case "hash":
+                                    this.hash = Encoding.Unicode.GetBytes(value);
+                                break;
+                                case "size":
+                                    this.size = long.Parse(value);
+                                break;
+                                case "wTimeTicks":
+                                    this.wTimeTicks = long.Parse(value);
+                                break;
+
+                            
+                            }
+                            phase = 0;
+                        }
+                    break;
+                }
+                if(c == '<'){
+                }
+
+            }
+        }
+        else{
+            throw new ArgumentException("Wrong arguments were given to file constructor");
+        }
     }
 
     public override string ToString(){
         string result = "";
-        result+="<path>"+this.FullName+"</path>";
         
-        return "";
+        result+=$"<fullName>{this.fullName}</fullName>";
+        result+=$"<name>{this.name}</name>";
+        result+=$"<localPath>{this.localPath}</localPath>";
+        result+=$"<hash>{BitConverter.ToString(this.hash).Replace("-","")}</hash>";
+        result+=$"<attributes>{this.attributes}</attributes>";
+        result+=$"<size>{this.size}</size>";
+        result+=$"<wTimeTicks>{this.wTimeTicks}</wTimeTicks>";
+        
+        return result;
     }
-
-    
     /// <summary>
-    /// Function convert FileInfo/DirectoryInfo to string !!! to be send
+    /// Convert info(string) to file object
     /// </summary>
-    /// <param name="fear">File(FileInfo) or Directory(DirectoryInfo)</param>
-    /// <typeparam name="TFileType"></typeparam>
-    /// <returns></returns>
-    static public string fileOrDirToString(DirectoryInfo fear){
-        log.l("Entering dirToString !!!");
-    
-        //WriteLine($"I am {fear.FullName}");
-        return "";
-    }
-    static public string fileOrDirToString(FileInfo fear){
-        log.l("Entering file to string !!!");
+    /// <param name="info">file.ToString()</param>
+   
+        
 
-        WriteLine($"I am a file {fear.FullName}");
-        return "";
-    }
 }
 
 public interface IFileComparable{
