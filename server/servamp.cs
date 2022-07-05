@@ -23,11 +23,9 @@ abstract public class hostshared{
     //Syncing two folder structure 
 
     /// <summary>
-    /// Upload directory structure to server/client 
-    /// In shortcut this function will ask server if he have every
-    /// subdirectory
+    /// Manage syncing file 
     /// </summary>
-    protected void upDirStruct(){
+    protected void masterFileTransfer(){
 
         if(chandler is null){
             log.l("chandler is null !!!",log.level.error);
@@ -52,8 +50,15 @@ abstract public class hostshared{
             }
                 foreach(var f in d.EnumerateFiles()){
                     log.l($"{f.Name} found");
-                    chandler.sendFile(f,dir);
+                    var fi = new file(f.FullName,dir.FullName);
+                    //#1 Get info about file
+                    chandler.sendText("GETINFO");
                     
+                    var response = chandler.receiveText();
+                    if(response == "OK"){
+                        chandler.sendText(fi.localPath);
+                    }
+
                 }
             enumerateThroughSubdirs(d);
             }
@@ -65,32 +70,27 @@ abstract public class hostshared{
         chandler.sendText("<END>");
     }    
     /// <summary>
-    /// Download Directory Structure from server/client 
-    /// This function will ensure that host have the same structure as
-    /// server/client 
+    /// Sync file 
     /// </summary>
-    //TODO
-    //It takes all messages of files name as one ... ...
-    protected void DownDirStruct(){
+
+    protected void slaveFileTransfer(){
         if(chandler is null){
             log.l("chandler is null !",log.level.error);
             throw new ArgumentNullException("chandler is null !");
         }
         while(true){
-            //Get info about file !
-            var info = chandler.receiveText();
-            if(info == "<END>"){
-                WriteLine("END!!#$!@$@!");
+            string command = chandler.receiveText();
+            switch(command){
+                case "GETINFO":
+                    chandler.sendText("OK");
+                    var localPath = chandler.receiveText();
+                    var dir = fhandler.getDirectory().FullName;
+                    var pathToFile = dir.Substring(0,dir.Length-1)+localPath;
+                    WriteLine($"{pathToFile}");
+
                 break;
             }
-            var bar = new file(info:info);
-            WriteLine($"Received object {info.ToString()}");
-            //Send response 
-            chandler.sendText("OK");
-            //Get file
-            chandler.receiveFile("/home/itam");
-            //Send response 
-            chandler.sendText("OK<EOF>");
         }
     }
 }
+

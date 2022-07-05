@@ -7,6 +7,7 @@ using static System.Console;
 using System.Text.RegularExpressions;
 using host.handler;
 using logger;
+using files;
 namespace host.server;
 
 public class server: hostshared
@@ -14,6 +15,7 @@ public class server: hostshared
     
     public server(int port = 0){
         log.l("Starting server thread",log.level.verbose);
+        fhandler = new filehandler("/home/itam/Desktop/TestZone/");
         StartServerThread();
         
     }
@@ -51,8 +53,8 @@ public class server: hostshared
         log.l("Server is waiting for connection...",log.level.info);
         chandler = new connectionHandler(connectionHandler.handlertype.client);
         log.l("Server is connected !");
-        DownDirStruct();
-        upDirStruct();
+        slaveFileTransfer();
+        
  
     }while(true);
     }

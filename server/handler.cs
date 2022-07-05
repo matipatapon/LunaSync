@@ -116,34 +116,24 @@ public class connectionHandler{
 
     }
 
-    public void sendFile(FileInfo fi,DirectoryInfo dir){
+    public void sendFile(FileInfo fi){
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
         }
         log.l($"Sending file");
-        //First send info about file 
-        var info = new file(fi.FullName,dir.FullName);
-
-        sendText(info.ToString());
-
-        var response = receiveText();
-
-        //Send file 
-        sSocket.SendFile("/home/itam/Desktop/listmot.odt");
-        
-        response = receiveText();
-
+        sSocket.SendFile(fi.FullName);
 
     }
 
     public void receiveFile(string path){
-        //get info 
 
-        var info = receiveText();
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
         }
         using(var temp = File.Create("../temp")){
+            
+
+            //Get file
             int sizeOfBuffer = 1024;
             var buffer = new byte[sizeOfBuffer];
             while(buffer.Length != 0){
@@ -156,9 +146,8 @@ public class connectionHandler{
                     log.l(e.Message,log.level.error);
                     break;
                 }
-                var response = receiveText();
-                
 
+                
             }
         }
     

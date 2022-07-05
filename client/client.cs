@@ -51,8 +51,8 @@ public class client: hostshared
         log.l("Creating chandler in client");
         chandler = new connectionHandler(connectionHandler.handlertype.server,info1.ipv4,info1.port,info1.dir);
         log.l("Starting syncing files !");
-        upDirStruct();
-        //fhandler.RelativeListDir("/home/itam");
+        masterFileTransfer();
+    
     }
 
     /// <summary>
