@@ -68,6 +68,28 @@ abstract public class hostshared{
                     log.l($"Master : received info{rInfo}");
                     WriteLine($"Got {rInfo} ^^");
 
+                    //#2 Compare this file to remote file then perform action 
+
+                    //Send file to server and replace with it 
+                    if(rInfo == "nogamenofile"){
+                        chandler.sendText("RECEIVEFILE");
+
+                        chandler.receiveText();
+
+                        chandler.sendFile(fi);
+
+                        chandler.receiveText();
+
+                        chandler.sendText(fi.ToString());
+
+                        chandler.receiveText();
+
+                    }
+
+                    //Get file from server and replace local file
+
+                    //Do nothing
+
                 }
             enumerateThroughSubdirs(d);
             }
@@ -93,14 +115,15 @@ abstract public class hostshared{
         }
         while(true){
             string command = chandler.receiveText();
+            var dir = fhandler.getDirectory().FullName;
+            var dirwb = dir.Substring(0,dir.Length-1);
             switch(command){
                 case "GETINFO":
                     log.l("Slave : GETINFO sending OK");
                     chandler.sendText("OK");
                     //#1 get local path to the file 
                     var localPath = chandler.receiveText();
-                    var dir = fhandler.getDirectory().FullName;
-                    var pathToFile = dir.Substring(0,dir.Length-1)+localPath;
+                    var pathToFile = dirwb+localPath;
                     WriteLine($"{pathToFile}");
                     log.l($"Slave crafted path to the file {pathToFile}");
                     //#2 Check if this file exist 
@@ -112,6 +135,20 @@ abstract public class hostshared{
                     }
                     log.l($"Slave sending back info {info}");
                     chandler.sendText(info);
+                    
+
+                break;
+                case "RECEIVEFILE":
+                    log.l("Slave : sending OK");
+                    chandler.sendText("OK");
+                    log.l("Slave : receiving file");
+                    chandler.receiveFile();
+                    log.l("Slave : sending OK");
+                    chandler.sendText("OK");
+                    log.l("Slave : receiving info about file");
+                    var inforf = new file(info:chandler.receiveText());
+                    log.l($"Slave : got information about file : {inforf.ToString()}");
+                    //File.Move("../temp",dirwb+inforf.localPath);
                     
 
                 break;

@@ -116,16 +116,16 @@ public class connectionHandler{
 
     }
 
-    public void sendFile(FileInfo fi){
+    public void sendFile(file fi){
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
         }
-        log.l($"Sending file");
-        sSocket.SendFile(fi.FullName);
+        log.l($"Sending file {fi.fullName}");
+        sSocket.SendFile(fi.fullName);
 
     }
 
-    public void receiveFile(string path){
+    public void receiveFile(){
 
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
