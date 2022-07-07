@@ -72,16 +72,17 @@ abstract public class hostshared{
 
                     //Send file to server and replace with it 
                     if(rInfo == "nogamenofile"){
+                        log.l($"Master : Sending RECEIVEFILE");
                         chandler.sendText("RECEIVEFILE");
-
+                        log.l($"Master : waiting for response");
                         chandler.receiveText();
-
+                        log.l("$Master : Sending file");
                         chandler.sendFile(fi);
-
+                        log.l("Master : waiting for response");
                         chandler.receiveText();
-
+                        log.l($"Master : Sending Info about file {fi.ToString()}");
                         chandler.sendText(fi.ToString());
-
+                        log.l("Master : Waiting for response");
                         chandler.receiveText();
 
                     }
@@ -148,8 +149,9 @@ abstract public class hostshared{
                     log.l("Slave : receiving info about file");
                     var inforf = new file(info:chandler.receiveText());
                     log.l($"Slave : got information about file : {inforf.ToString()}");
-                    //File.Move("../temp",dirwb+inforf.localPath);
-                    
+                    log.l("Slave : sending response");
+                    File.Move("../temp",(dir+inforf.localPath));
+                    chandler.sendText("OK");
 
                 break;
             }

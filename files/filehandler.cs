@@ -129,7 +129,8 @@ public class file{
             log.l($"Collected info about file : {this.ToString()}");
         }
         else if (info is not null){
-            string attrname = "";
+        log.l($"file constructor got info : {info}");
+        string attrname = "";
         string value = "";
         int phase = 0;
         //I think regex would take more space.
@@ -155,7 +156,7 @@ public class file{
                     break;
                     case 2:
                         if(c == '>'){
-                            switch(name){
+                            switch(attrname){
                                 case "fullName":
                                     this.fullName = value;
                                 break;
@@ -177,6 +178,8 @@ public class file{
 
                             
                             }
+                            attrname = "";
+                            value = "";
                             phase = 0;
                         }
                     break;
