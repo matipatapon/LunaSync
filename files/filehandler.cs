@@ -3,6 +3,7 @@ using System.Collections;
 using static System.Console;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using logger;
 namespace files;
 public class filehandler
@@ -129,69 +130,37 @@ public class file{
             log.l($"Collected info about file : {this.ToString()}");
         }
         else if (info is not null){
-        log.l($"file constructor got info : {info}");
-        string attrname = "";
-        string value = "";
-        int phase = 0;
-        //I think regex would take more space.
-            foreach(char c in info){
-                
-                switch(phase){
-                    case 0:
-                        if(c == '>'){
-                            phase++;
-                        }
-                        else if(c != '<'){
-                            attrname += c;
-                        }
-                    break;
-                    case 1:
-                        if(c == '<'){
-                            phase++;
-                        
-                        }
-                        else{
-                            value+=c;
-                        }
-                    break;
-                    case 2:
-                        if(c == '>'){
-                            switch(attrname){
-                                case "fullName":
-                                    this.fullName = value;
-                                break;
-                                case "name":
-                                    this.name = value;
-                                break;
-                                case "localPath":
-                                    this.localPath = value;
-                                break;
-                                case "hash":
-                                    this.hash = Encoding.Unicode.GetBytes(value);
-                                break;
-                                case "size":
-                                    this.size = long.Parse(value);
-                                break;
-                                case "wTimeTicks":
-                                    this.wTimeTicks = long.Parse(value);
-                                break;
-
-                            
-                            }
-                            attrname = "";
-                            value = "";
-                            phase = 0;
-                        }
-                    break;
-                }
-                if(c == '<'){
-                }
-
-            }
+            log.l($"file constructor got info : {info}");
+         
+            
         }
         else{
             throw new ArgumentException("Wrong arguments were given to file constructor");
         }
+    }
+
+    public enum Pattern{
+        attrname,
+        valueIDK,
+        fullName,
+        localPath,
+        attributes,
+        size,
+        wTimeTicks,
+        infoSegment,
+        attrpattern,
+        valuePattern
+    }
+    public static Match RegexIHateU(string info , Pattern pattern){
+        IDictionary<string,string> valuePatterns = new Dictionary<string,string>();
+        
+        valuePatterns["infoSegment"] = @"<\w+>[^<>/]+</\w+>";
+        valuePatterns["fullName"] = @"(/\w+)*/\w+";
+        valuePatterns["localPath"] = @"(\w+/)*";
+        valuePatterns["hash"] = @".{16}";
+
+        return Regex.Match(info,valuePatterns[pattern.ToString()]);
+ 
     }
 
     public override string ToString(){

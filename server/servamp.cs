@@ -117,14 +117,14 @@ abstract public class hostshared{
         while(true){
             string command = chandler.receiveText();
             var dir = fhandler.getDirectory().FullName;
-            var dirwb = dir.Substring(0,dir.Length-1);
+
             switch(command){
                 case "GETINFO":
                     log.l("Slave : GETINFO sending OK");
                     chandler.sendText("OK");
                     //#1 get local path to the file 
                     var localPath = chandler.receiveText();
-                    var pathToFile = dirwb+localPath;
+                    var pathToFile = dir+localPath;
                     WriteLine($"{pathToFile}");
                     log.l($"Slave crafted path to the file {pathToFile}");
                     //#2 Check if this file exist 
@@ -149,13 +149,30 @@ abstract public class hostshared{
                     log.l("Slave : receiving info about file");
                     var inforf = new file(info:chandler.receiveText());
                     log.l($"Slave : got information about file : {inforf.ToString()}");
-                    log.l("Slave : sending response");
+                    
+                    pathFactor(inforf.fullName);
                     File.Move("../temp",(dir+inforf.localPath));
+                    
+                    log.l("Slave : sending response");
                     chandler.sendText("OK");
 
                 break;
             }
         }
+    }
+    /// <summary>
+    /// Create mising folders to file 
+    /// </summary>
+    /// <returns>True if path was created successful</returns>
+    protected bool pathFactor(string path){
+        string pattern = @"\w+/";
+        var matches = Regex.Matches(path,pattern);
+        foreach(var ma in matches){
+            var m = ma.ToString();
+            m = m.Substring(0,m.Length-1);
+            WriteLine($"Gotcha {m}");
+        }
+        return false;
     }
 }
 
