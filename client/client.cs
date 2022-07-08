@@ -61,7 +61,7 @@ public class client: hostshared
     /// </summary>
     /// <param name="path">selected dir address:port/dir </param>
     /// <returns>Return address IPv4</returns>
-    public IPAddress get_ip(string path){
+    static public IPAddress get_ip(string path){
         byte[] bytes = new byte[4];
 
         string octet = @"[1-2]?[0-9]{1,3}";
@@ -93,7 +93,7 @@ public class client: hostshared
     /// </summary>
     /// <param name="path">selected dir address:port/dir </param>
     /// <returns>return path ex /home/itam/whatever/ </returns>
-    public string get_path(string path){
+    static public string get_path(string path){
         string pattern = @"/(\w+/)*(\w+)/?$";
         string result = "";
         bool isMatch = Regex.IsMatch(path,pattern);
@@ -110,7 +110,7 @@ public class client: hostshared
     /// </summary>
     /// <param name="path">selected dir</param>
     /// <returns>port int</returns>
-    public int get_port(string path){
+    static public int get_port(string path){
         string pattern = @":\d*";
         int result = 0;
         if(Regex.IsMatch(path,pattern)){
@@ -132,7 +132,7 @@ public class client: hostshared
     ///  string path
     /// </returns>
 
-    public (int port, IPAddress ipv4, string dir) getInfoFromPath(string path){
+    static public (int port, IPAddress ipv4, string dir) getInfoFromPath(string path){
         
         if(path is null){
             throw new ArgumentNullException("Path is null !");

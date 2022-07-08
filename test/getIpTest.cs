@@ -15,10 +15,10 @@ public class pathtest
     public void get_ip_CorrectResult(string path,string expected)
     {
         // arrange
-        var cli = new client();
+
 
         // act 
-        var result = cli.get_ip(path);
+        var result = client.get_ip(path);
     
         // assert 
         Assert.Equal(expected,result.ToString());
@@ -30,11 +30,9 @@ public class pathtest
     [InlineData("127.0.0.1:50/home/home","/home/home/")]
     //[InlineData(".../home/.../home","")]
     public void get_path_TEST(string path,string expected){
-        // arrange 
-        var cli = new client();
 
-        // act
-        var result = cli.get_path(path);
+        // arrange & act
+        var result = client.get_path(path);
 
         // assert 
         Assert.Equal(expected,result);
@@ -58,9 +56,9 @@ public class pathtest
     [InlineData("1.1.1.1:0/home")]
     public void getInfoFromPath_ArgumentException(string path){
         // arrange
-        var cli = new client();
+  
         // act & arragne
-        Assert.Throws<ArgumentException>(() => cli.getInfoFromPath(path));
+        Assert.Throws<ArgumentException>(() => client.getInfoFromPath(path));
         
     }
     [Theory]
@@ -69,10 +67,9 @@ public class pathtest
     [InlineData("192.168.0.20:8310/whateverserver/jakistojestserwer/jakitoniewiem","192.168.0.20,8310,/whateverserver/jakistojestserwer/jakitoniewiem/")]
     public void getIpFromPatch_ValueTest(string path, string expected){
         // arrange
-        var cli = new client();
         string result = "";
         // act
-        (int port, IPAddress ipv4, string dir) = cli.getInfoFromPath(path);
+        (int port, IPAddress ipv4, string dir) = client.getInfoFromPath(path);
         result = $"{ipv4.ToString()},{port.ToString()},{dir.ToString()}";
 
         // arrange 
