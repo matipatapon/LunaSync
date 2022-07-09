@@ -131,7 +131,25 @@ public class file{
         }
         else if (info is not null){
             log.l($"file constructor got info : {info}");
-         
+            Match match = RegexIHateU(info,Pattern.info);
+            Match? segment = null;
+            if(match.Success == true){
+                do{
+                if(segment is null){
+                    segment = RegexIHateU(info,Pattern.infoSegment);
+                    
+                }
+                else{
+                    segment = segment.NextMatch();
+                }
+                WriteLine($"Here i am {segment.Value}");
+                }while(segment.Success == true);
+            }
+            else{
+                var message = $"info is not valid {info}";
+                log.l(message,log.level.error);
+                throw new ArgumentException(message);           
+            }
             
         }
         else{
@@ -142,25 +160,49 @@ public class file{
     public enum Pattern{
         attrname,
         valueIDK,
+        noBrackets,
         fullName,
         localPath,
         attributes,
         size,
         wTimeTicks,
         infoSegment,
+        info,
         attrpattern,
         valuePattern
     }
+
+    /// <summary>
+    /// Regex patterns to validate and get values from info  
+    /// </summary>
+    /// <param name="info">info (file.ToString)</param>
+    /// <param name="pattern">Regex pattern from Patterns</param>
+    /// <returns>Returns Match , Match.Empty if failed</returns>
     public static Match RegexIHateU(string info , Pattern pattern){
         IDictionary<string,string> valuePatterns = new Dictionary<string,string>();
-        
-        valuePatterns["infoSegment"] = @"<\w+>[^<>/]+</\w+>";
+        valuePatterns["info"] = @"^(<\w+>[^<>]+</\w+>)+$";
+        valuePatterns["infoSegment"] = @"<\w+>[^<>]+</\w+>";
+        valuePatterns["attrname"] = @"<\w+>";
+        valuePatterns["valueIDK"] = @">[^<>]*<";
         valuePatterns["fullName"] = @"(/\w+)*/\w+";
         valuePatterns["localPath"] = @"(\w+/)*";
         valuePatterns["hash"] = @".{16}";
 
-        return Regex.Match(info,valuePatterns[pattern.ToString()]);
- 
+        
+        try{
+        var match = Regex.Match(info,valuePatterns[pattern.ToString()]);
+
+        //Return match witchout brackets 
+        if(pattern == Pattern.attrname || pattern == Pattern.valueIDK){
+            return Regex.Match(match.ToString(),@"[^<>]+");
+        }
+
+        return match;
+        }
+        catch(KeyNotFoundException e){
+            log.l($"Key not found Regex I hate you {e.Message}");
+            return Match.Empty;
+        }
     }
 
     public override string ToString(){

@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="../client/client.csproj"/>
     <ProjectReference Include="../server/server.csproj"/>
+    <ProjectReference Include="../files/files.csproj"/>
   </ItemGroup>
 
 </Project>
