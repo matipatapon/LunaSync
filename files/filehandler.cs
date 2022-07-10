@@ -163,15 +163,13 @@ public class file{
     public enum Pattern{
         attrname,
         valueIDK,
-        noBrackets,
         fullName,
         localPath,
         attributes,
         size,
         wTimeTicks,
         infoSegment,
-        info,
-        attrpattern,
+        info
     }
 
     /// <summary>
@@ -191,10 +189,26 @@ public class file{
         valuePatterns["info"] = @"^(<\w+>[^<>]+</\w+>)+$";
         valuePatterns["infoSegment"] = @"<\w+>[^<>]+</\w+>";
         valuePatterns["attrname"] = @"<\w+>";
-        valuePatterns["valueIDK"] = @">[^<>]*<";
+        valuePatterns["valueIDK"] = @">[^<>]+<";
         valuePatterns["fullName"] = @"^(/[^<>\\/]+)*/[^<>\\/]+$";
-        valuePatterns["localPath"] = @"(\w+/)*";
-        valuePatterns["hash"] = @".{16}";
+        valuePatterns["localPath"] = valuePatterns["fullName"];
+        valuePatterns["hash"] = @"^[A-Z0-9]{32}$";
+        valuePatterns["wTimeTicks"] = @"^\d+$";
+        valuePatterns["size"] = valuePatterns["wTimeTicks"];
+        valuePatterns["name"] = @"^[^<>\\/]+$";
+        //Treat this keys as value !!
+        string[] values = new string[6];
+        values[0] = "localPath";
+        values[1] = "hash";
+        values[2] = "fullName";
+        values[3] = "wTimeTicks";
+        values[4] = "size";
+        values[5] = "name";
+        //trim <> characters !!!
+        string [] trimBy2 = new string[2];
+        trimBy2[0] = "valueIDK";
+        trimBy2[1] = "attrname";
+
         string patternString = pattern.ToString()!;
         if(!valuePatterns.ContainsKey(patternString))
         {
@@ -203,20 +217,36 @@ public class file{
             throw new ArgumentException(message);
         }
         try{
+         
+            if(values.Contains(patternString)){
+                var matchValue = Regex.Match(info,valuePatterns["valueIDK"]);
+                
+                if(!matchValue.Success){
+                    string message = $"Can't find {valuePatterns["valueIDK"]} pattern in info : {info}";
+                    log.l(message,log.level.error);
+                    throw new ArgumentException(message);
+                }
 
-        var match = Regex.Match(info,valuePatterns[patternString]);
-        
-        if(!match.Success){
-            string message = $"Can't find pattern : '{valuePatterns[patternString]}' in info : '{info}'";
-            log.l(message,log.level.error);
-            throw new ArgumentException(message);
-        }
+                info = matchValue.Value;
+                //Remove ><
+                info = info.Substring(1,info.Length-2);
+            }
+            
+            
+            var match = Regex.Match(info,valuePatterns[patternString]);
+            
+            if(!match.Success){
+                string message = $"Can't find pattern : '{valuePatterns[patternString]}' in info : '{info}'";
+                log.l(message,log.level.error);
+                throw new ArgumentException(message);
+            }
 
-        if(patternString == "attrname" || patternString == "valueIDK"){
-            return Regex.Match(match.Value,"[^<>]+");
-        }
+            if(trimBy2.Contains(patternString)){
 
-        return match;
+                return Regex.Match(match.Value,"[^<>]+");
+            }
+
+            return match;
         }
         catch(KeyNotFoundException e){
             log.l($"Key not found Regex I hate you {e.Message}");

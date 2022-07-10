@@ -51,9 +51,9 @@ public class fileTEST{
     }
 
     [Theory]
-    [InlineData(@"/home/.the/only/thing/i/know/for/real/raiden.exe",
+    [InlineData(@">/home/.the/only/thing/i/know/for/real/raiden.exe<",
     @"/home/.the/only/thing/i/know/for/real/raiden.exe")]
-    [InlineData(@"/homek/.the/only/thing/i/know/for/real/raiden.exexdxddxd",
+    [InlineData(@">/homek/.the/only/thing/i/know/for/real/raiden.exexdxddxd<",
     @"/homek/.the/only/thing/i/know/for/real/raiden.exexdxddxd")]
 
     public void getfullNameSuccess(string info,string excepted){
@@ -65,16 +65,80 @@ public class fileTEST{
     }
 
     [Theory]
-    [InlineData(@"/home/itam//ninnin")]
-    [InlineData(@"home/itam/ninnin")]
-    [InlineData(@"/home/itam//ninnin/")]
+    [InlineData(@">/home/itam//ninnin<")]
+    [InlineData(@">home/itam/ninnin<")]
+    [InlineData(@">/home/itam//ninnin/<")]
     public void getfullNameFailed(string info){
-        // act & arrange 
-    
-        //arrange
+        // act && arrange && assert
         Assert.Throws<ArgumentException>(()=>file.RegexIHateU<file.Pattern>(info,file.Pattern.fullName).ToString());
+    }
 
+    [Theory]
+    [InlineData(@"<maslo>/home/itam/whatever</maslo>","/home/itam/whatever")]
+    public void getlocalPathSuccess(string info,string expected){
+
+        //act && arrange
+        var result = file.RegexIHateU<string>(info,"localPath").ToString();
+        // assert 
+        Assert.Equal(expected,result);
+    }
+
+    [Theory]
+    [InlineData(@"<eren>D41D8CD98F00B204E9800998ECF8427E</eren>","D41D8CD98F00B204E9800998ECF8427E")]
+    [InlineData(@"<the>AB5E2C19EAE9C8B318A52D8595C16010</the>","AB5E2C19EAE9C8B318A52D8595C16010")]
+    public void getHashSuccess(string info,string expected){
+        // act && arrange
+        var result = file.RegexIHateU<string>(info,"hash");
+        // assert
+        Assert.Equal(expected,result.Value);
+    }
+
+    [Theory]
+    [InlineData(@"<head>123456789ABCDEFGF</head>")]
+    [InlineData(@"<head>FRYTKA5</head>")]
+    [InlineData(@"<head>hereiamdirtyandfacelesswaitingtoheedyourinstructiononmywoninvinciblewarrioriamthewindofthedestruction</head>")]
+    [InlineData(@"<head>TOALLMENWHOBENDt")]
+    public void getHashFailed(string info){
+        //arrange && act && assert
+        Assert.Throws<ArgumentException>(() => file.RegexIHateU<string>(info,"hash"));
+    }
+
+    [Theory]
+    [InlineData(@"<wTimeTicks>637928261827588277</wTimeTicks>","637928261827588277")]
+    [InlineData(@"<wTimeTicks>637928261940023780</wTimeTicks>","637928261940023780")]
+    [InlineData(@"<wTimeTicks>637928262012691842</wTimeTicks>","637928262012691842")]
+    public void getwTimeTicksSuccess(string info,string expected){
+        //  arrange && act 
+        var result = file.RegexIHateU<string>(info,"wTimeTicks").Value;
+        //  assert 
+        Assert.Equal(expected,result);
+    }
+
+    [Theory]
+    [InlineData(@"<wTimeTicks>637928261827a588277</wTimeTicks>")]
+    [InlineData(@"<wTimeTicks>637928261940 023780</wTimeTicks>")]
+    [InlineData(@"<wTimeTicks>6379282620126[91842</wTimeTicks>")]
+    public void getwTimeTicksFailed(string info){
+        // act arrange and assert 
+        Assert.Throws<ArgumentException>(() => file.RegexIHateU<string>(info,"wTimeTicks"));
     }
     
-    
+    [Theory]
+    [InlineData(@"<name>HomeWork</name>","HomeWork")]
+    [InlineData(@"<name>factorio.exe</name>","factorio.exe")]
+    [InlineData(@"<name>anime cat girl.jpg</name>","anime cat girl.jpg")]
+    public void getNameSuccess(string info,string expected){
+        // arrange and act 
+        var result = file.RegexIHateU<string>(info,"name").Value;
+        // assert
+        Assert.Equal(expected,result);
+    }
+
+    [Theory]
+    [InlineData(@"<name>/home/itam/HomeWork/animecatgirluwu.raw</name>")]
+    [InlineData(@"<name>\\MyDressUpDariling.exe\folder</name")]
+    public void getNameFailed(string info){
+        //arrange , act and assert
+        Assert.Throws<ArgumentException>(() => file.RegexIHateU<string>(info,"name")); 
+    }
 }
