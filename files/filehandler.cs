@@ -132,18 +132,21 @@ public class file{
         else if (info is not null){
             log.l($"file constructor got info : {info}");
             Match match = RegexIHateU(info,Pattern.info);
-            Match? segment = null;
+            
             if(match.Success == true){
-                do{
-                if(segment is null){
-                    segment = RegexIHateU(info,Pattern.infoSegment);
+                Match segment = RegexIHateU(info,Pattern.infoSegment);
+                while(segment.Success){
+                    var attrName = RegexIHateU(segment.Value,Pattern.attrname).Value;
+                    var value = RegexIHateU(segment.Value,Pattern.valueIDK);
+                    value = RegexIHateU<string>(value.Value,attrName);
+                    //validate value format
                     
-                }
-                else{
+                    if(!value.Success)
+                    WriteLine($"Here i am {segment.Value} My attrname is {attrName} and my value is {value}");
+
                     segment = segment.NextMatch();
+                
                 }
-                WriteLine($"Here i am {segment.Value}");
-                }while(segment.Success == true);
             }
             else{
                 var message = $"info is not valid {info}";
@@ -169,32 +172,48 @@ public class file{
         infoSegment,
         info,
         attrpattern,
-        valuePattern
     }
 
     /// <summary>
-    /// Regex patterns to validate and get values from info  
+    /// Get match from given pattern 
     /// </summary>
     /// <param name="info">info (file.ToString)</param>
     /// <param name="pattern">Regex pattern from Patterns</param>
     /// <returns>Returns Match , Match.Empty if failed</returns>
-    public static Match RegexIHateU(string info , Pattern pattern){
+    public static Match RegexIHateU<T>(string info , T pattern){
+        if(pattern is null){
+            string message = "pattern can't be null !";
+            log.l(message,log.level.error);
+            throw new ArgumentNullException(message);
+        }
+
         IDictionary<string,string> valuePatterns = new Dictionary<string,string>();
         valuePatterns["info"] = @"^(<\w+>[^<>]+</\w+>)+$";
         valuePatterns["infoSegment"] = @"<\w+>[^<>]+</\w+>";
         valuePatterns["attrname"] = @"<\w+>";
         valuePatterns["valueIDK"] = @">[^<>]*<";
-        valuePatterns["fullName"] = @"(/\w+)*/\w+";
+        valuePatterns["fullName"] = @"^(/[^<>\\/]+)*/[^<>\\/]+$";
         valuePatterns["localPath"] = @"(\w+/)*";
         valuePatterns["hash"] = @".{16}";
-
-        
+        string patternString = pattern.ToString()!;
+        if(!valuePatterns.ContainsKey(patternString))
+        {
+            string message = $"valuePattrns dictionary doesn't contain {pattern.ToString()!} key"; 
+            log.l(message,log.level.error);
+            throw new ArgumentException(message);
+        }
         try{
-        var match = Regex.Match(info,valuePatterns[pattern.ToString()]);
 
-        //Return match witchout brackets 
-        if(pattern == Pattern.attrname || pattern == Pattern.valueIDK){
-            return Regex.Match(match.ToString(),@"[^<>]+");
+        var match = Regex.Match(info,valuePatterns[patternString]);
+        
+        if(!match.Success){
+            string message = $"Can't find pattern : '{valuePatterns[patternString]}' in info : '{info}'";
+            log.l(message,log.level.error);
+            throw new ArgumentException(message);
+        }
+
+        if(patternString == "attrname" || patternString == "valueIDK"){
+            return Regex.Match(match.Value,"[^<>]+");
         }
 
         return match;
