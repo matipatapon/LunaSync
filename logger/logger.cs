@@ -9,6 +9,8 @@ namespace logger;
 /// </summary>
 public class log{ 
     private static string path = "../log.txt";
+    private static bool showTime = true;
+    private static bool showLevel = true;
     public enum level {
         error,
         info,
@@ -29,42 +31,43 @@ public class log{
 
         }
     }
-
+    //If file is busy then buffer is used to store message for later
+    static string buffer = "";
     /// <summary>
     /// Log string to the text 
     /// </summary>
     /// <param name="what">Message to log </param>
+    
     public static void l(string what,level lvl = level.verbose){
         if(lvl > messagelevel){
             return;
         }
         //Try write log to the log file if not retry up to five times !
-        int trycount = 1;
-        while(trycount <= 5){
-            try{
-                using(var fs = File.Open(path,FileMode.Append)){
-                    var bytes = new UTF8Encoding(true).GetBytes(what+"\n");
-                    fs.Write(bytes,0,bytes.Count());
-                    current+=1;
+        try{
+            using(var fs = File.Open(path,FileMode.Append)){
+                
+                if(showTime){
+                    var now = DateTime.Now;
+                    what = $"<{now:hh:mm:ss}> {what}";
                 }
-                if(max != 0 && current > max){
-                    current = 0;
-                    reset();
+                if(showLevel){
+                    var lev = lvl.ToString();
+                    what = $"<{lev}> {what}";
                 }
-                break;
+                var bytes = new UTF8Encoding(true).GetBytes(what+"\n"+buffer);
+                fs.Write(bytes,0,bytes.Count());
+                current+=1;
+                buffer = "";
             }
-            catch(IOException e){
-                trycount++;
-                WriteLine($"Error during logging message to the file due to {e.Message} Retry in one second !");
-                Thread.Sleep(1000);
-                continue;
+            if(max != 0 && current > max){
+                current = 0;
+                reset();
             }
+          
         }
-
-        if(trycount > 5){
-            WriteLine($"Can't write '{what}' to log.txt ");
-        }
-        
+        catch(IOException){
+            buffer+=what+"\n";
+        }        
 
     }
 
