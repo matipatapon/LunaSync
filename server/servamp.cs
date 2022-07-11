@@ -124,7 +124,7 @@ abstract public class hostshared{
                     chandler.sendText("OK");
                     //#1 get local path to the file 
                     var localPath = chandler.receiveText();
-                    var pathToFile = dir+localPath;
+                    var pathToFile = dir.Substring(1,dir.Length-1)+localPath;
                     WriteLine($"{pathToFile}");
                     log.l($"Slave crafted path to the file {pathToFile}");
                     //#2 Check if this file exist 

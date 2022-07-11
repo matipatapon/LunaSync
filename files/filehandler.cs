@@ -121,9 +121,14 @@ public class file{
         if(path is not null && dir is not null){
             var fi = new FileInfo(path);
             this.fullName = fi.FullName;
-            this.hash = this.getHash();
+            this.hash = "AAAABBBBEEEERRRRQQQQWWWWEEEERRRR";//this.getHash();
             this.name = fi.Name;
-            this.localPath = fullName.Substring(dir.Length,fullName.Length-dir.Length);
+            if(dir[dir.Length-1] == '/'){
+                this.localPath = fullName.Substring(dir.Length-1,fullName.Length-dir.Length+1);
+            }
+            else{
+                this.localPath = fullName.Substring(dir.Length,fullName.Length-dir.Length);
+            }       
             this.attributes = (int)File.GetAttributes(path);
             this.size = fi.Length;
             this.wTimeTicks = fi.LastWriteTime.Ticks;
@@ -145,7 +150,7 @@ public class file{
                         var valueMatch = RegexIHateU<string>(segment.Value,attrMatch.Value);
                         if(valueMatch.Success){
                             string valueString = valueMatch.Value;
-                            bool ok = false;
+                            bool ok = true;
                             switch(attrMatch.Value){
                                 
                                 case "fullName":
@@ -171,6 +176,9 @@ public class file{
                                 log.l($"Can't convert {valueString} to {attrMatch.Value}",log.level.error);
                             }
                         }
+                    else{
+                        log.l($"Can't get attrname and value from segmen {segment.Value}");
+                    }
                     //validate value format
                     
                     
@@ -289,7 +297,6 @@ public class file{
 
     public override string ToString(){
         string result = "";
-        
         result+=$"<fullName>{this.fullName}</fullName>";
         result+=$"<name>{this.name}</name>";
         result+=$"<localPath>{this.localPath}</localPath>";
