@@ -50,7 +50,7 @@ abstract public class hostshared{
             }
                 foreach(var f in d.EnumerateFiles()){
 
-                    var fi = new file(f.FullName,dir.FullName);
+                    var fi = new file(f.FullName,fhandler.getDirectory().FullName);
                     //#1 Get info about file
                     log.l($"Master : sending GETINFO");
                     chandler.sendText("GETINFO");
@@ -124,7 +124,7 @@ abstract public class hostshared{
                     chandler.sendText("OK");
                     //#1 get local path to the file 
                     var localPath = chandler.receiveText();
-                    var pathToFile = dir.Substring(1,dir.Length-1)+localPath;
+                    var pathToFile = dir.Substring(0,dir.Length-1)+localPath;
                     WriteLine($"{pathToFile}");
                     log.l($"Slave crafted path to the file {pathToFile}");
                     //#2 Check if this file exist 
@@ -150,8 +150,11 @@ abstract public class hostshared{
                     var inforf = new file(info:chandler.receiveText());
                     log.l($"Slave : got information about file : {inforf.ToString()}");
                     
-                    pathFactor(inforf.fullName);
-                    File.Move("../temp",(dir+inforf.localPath));
+                    localPath = dir+inforf.localPath.Substring(1,inforf.localPath.Length-1);
+
+                    pathFactor(localPath);
+                    
+                    File.Move("../temp",(localPath));
                     
                     log.l("Slave : sending response");
                     chandler.sendText("OK");
@@ -165,12 +168,19 @@ abstract public class hostshared{
     /// </summary>
     /// <returns>True if path was created successful</returns>
     protected bool pathFactor(string path){
-        string pattern = @"\w+/";
+        string pattern = @"[^/\\]+/";
+        string currentPath = "";
         var matches = Regex.Matches(path,pattern);
         foreach(var ma in matches){
             var m = ma.ToString();
             m = m.Substring(0,m.Length-1);
-            WriteLine($"Gotcha {m}");
+            currentPath+="/"+m;
+            WriteLine($"Gotcha {currentPath}");
+
+            //Check if directory doesn't exists and create them if didn't 
+            if(!Directory.Exists(currentPath)){
+                Directory.CreateDirectory(currentPath);
+            }
         }
         return false;
     }
