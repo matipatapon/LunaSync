@@ -87,25 +87,25 @@ public class file{
     readonly public string fullName = string.Empty;
     readonly public string name = string.Empty;
     readonly public string localPath = string.Empty;
-    readonly byte[] hash = new byte[16];
+    readonly string hash = "";
     long size = 0;
     long wTimeTicks = 0;
-    FileAttributes attributes = 0;
+    int attributes = 0;
 
 
     /// <summary>
     /// Get hash of the file
     /// </summary>
     /// <returns>Return hash (byte[16]) md5</returns>
-    byte[] getHash(){
+    string getHash(){
         var md5 = MD5.Create();
         try{
             var stream = new FileInfo(this.fullName).OpenRead();
-            return (md5.ComputeHash(stream));
+            return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-","");
         }
         catch(UnauthorizedAccessException){
             
-            return new byte[16];
+            return "";
         }
 
         
@@ -124,7 +124,7 @@ public class file{
             this.hash = this.getHash();
             this.name = fi.Name;
             this.localPath = fullName.Substring(dir.Length,fullName.Length-dir.Length);
-            this.attributes = File.GetAttributes(path);
+            this.attributes = (int)File.GetAttributes(path);
             this.size = fi.Length;
             this.wTimeTicks = fi.LastWriteTime.Ticks;
             log.l($"Collected info about file : {this.ToString()}");
@@ -136,14 +136,45 @@ public class file{
             if(match.Success == true){
                 Match segment = RegexIHateU(info,Pattern.infoSegment);
                 while(segment.Success){
-                    var attrName = RegexIHateU(segment.Value,Pattern.attrname).Value;
-                    var value = RegexIHateU(segment.Value,Pattern.valueIDK);
-                    value = RegexIHateU<string>(value.Value,attrName);
+
+                    var attrMatch = RegexIHateU(segment.Value,Pattern.attrname);
+                    var valueIDKMatch = RegexIHateU(segment.Value,Pattern.valueIDK);
+
+                    if(attrMatch.Success && valueIDKMatch.Success ){
+                                            
+                        var valueMatch = RegexIHateU<string>(segment.Value,attrMatch.Value);
+                        if(valueMatch.Success){
+                            string valueString = valueMatch.Value;
+                            bool ok = false;
+                            switch(attrMatch.Value){
+                                
+                                case "fullName":
+                                    this.fullName = valueString;  
+                                break;
+                                case "localPath":
+                                    this.localPath = valueString;
+                                break;
+                                case "hash":
+                                    this.hash = valueString;
+                                break;
+                                case "size":
+                                    ok = long.TryParse(valueString,out this.size);
+                                break;
+                                case "attributes":
+                                    ok = int.TryParse(valueString,out this.attributes);
+                                break;
+                                case "wTimeTicks":
+                                    ok = long.TryParse(valueString,out this.wTimeTicks);
+                                break;
+                            }
+                            if(!ok){
+                                log.l($"Can't convert {valueString} to {attrMatch.Value}",log.level.error);
+                            }
+                        }
                     //validate value format
                     
-                    if(!value.Success)
-                    WriteLine($"Here i am {segment.Value} My attrname is {attrName} and my value is {value}");
-
+                    
+                    }
                     segment = segment.NextMatch();
                 
                 }
@@ -195,15 +226,17 @@ public class file{
         valuePatterns["hash"] = @"^[A-Z0-9]{32}$";
         valuePatterns["wTimeTicks"] = @"^\d+$";
         valuePatterns["size"] = valuePatterns["wTimeTicks"];
+        valuePatterns["attributes"] = valuePatterns["wTimeTicks"];
         valuePatterns["name"] = @"^[^<>\\/]+$";
         //Treat this keys as value !!
-        string[] values = new string[6];
+        string[] values = new string[7];
         values[0] = "localPath";
         values[1] = "hash";
         values[2] = "fullName";
         values[3] = "wTimeTicks";
         values[4] = "size";
         values[5] = "name";
+        values[6] = "attributes";
         //trim <> characters !!!
         string [] trimBy2 = new string[2];
         trimBy2[0] = "valueIDK";
@@ -260,7 +293,7 @@ public class file{
         result+=$"<fullName>{this.fullName}</fullName>";
         result+=$"<name>{this.name}</name>";
         result+=$"<localPath>{this.localPath}</localPath>";
-        result+=$"<hash>{BitConverter.ToString(this.hash).Replace("-","")}</hash>";
+        result+=$"<hash>{this.hash}</hash>";
         result+=$"<attributes>{this.attributes}</attributes>";
         result+=$"<size>{this.size}</size>";
         result+=$"<wTimeTicks>{this.wTimeTicks}</wTimeTicks>";
