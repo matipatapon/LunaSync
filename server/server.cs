@@ -1,14 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.IO;
-using System.Threading;
-using static System.Console;
-using System.Text.RegularExpressions;
-using host.handler;
-using logger;
-using files;
-namespace host.server;
+﻿namespace host.server;
 
 public class server: hostshared
 {

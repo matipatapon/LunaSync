@@ -1,13 +1,13 @@
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.IO;
-using System.Threading;
-using static System.Console;
-using System.Text.RegularExpressions;
-using files;
-using logger;
-using host.handler;
+global using System.Net.Sockets;
+global using System.Net;
+global using System.Text;
+global using System.IO;
+global using System.Threading;
+global using static System.Console;
+global using System.Text.RegularExpressions;
+global using files;
+global using logger;
+global using host.handler;
 namespace host;
 /// <summary>
 /// Shared settings and functions between objects 
@@ -72,18 +72,24 @@ abstract public class hostshared{
 
                     //Send file to server and replace with it 
                     if(rInfo == "nogamenofile"){
+
                         log.l($"Master : Sending RECEIVEFILE");
                         chandler.sendText("RECEIVEFILE");
+                        //1
                         log.l($"Master : waiting for response");
                         chandler.receiveText();
-                        log.l("$Master : Sending file");
-                        chandler.sendFile(fi);
-                        log.l("Master : waiting for response");
-                        chandler.receiveText();
+                        //2
                         log.l($"Master : Sending Info about file {fi.ToString()}");
                         chandler.sendText(fi.ToString());
                         log.l("Master : Waiting for response");
                         chandler.receiveText();
+                        //3
+                        log.l("Master : Sending file");
+                        chandler.sendFile(fi);
+                        log.l("Master : waiting for response");
+                        chandler.receiveText();
+                       
+                        
 
                     }
 
@@ -140,15 +146,21 @@ abstract public class hostshared{
 
                 break;
                 case "RECEIVEFILE":
+                    //1
                     log.l("Slave : sending OK");
                     chandler.sendText("OK");
-                    log.l("Slave : receiving file");
-                    chandler.receiveFile();
-                    log.l("Slave : sending OK");
-                    chandler.sendText("OK");
+                    //2
                     log.l("Slave : receiving info about file");
                     var inforf = new file(info:chandler.receiveText());
                     log.l($"Slave : got information about file : {inforf.ToString()}");
+                    log.l("Slave : sending response");
+                    chandler.sendText("OK");
+                    //3
+                    log.l("Slave : receiving file");
+                    chandler.receiveFile(inforf.size);
+                    log.l("Slave : sending OK");
+                    chandler.sendText("OK");
+                    
                     
                     localPath = dir+inforf.localPath.Substring(1,inforf.localPath.Length-1);
 
@@ -156,8 +168,7 @@ abstract public class hostshared{
                     
                     File.Move("../temp",(localPath));
                     
-                    log.l("Slave : sending response");
-                    chandler.sendText("OK");
+                    
 
                 break;
             }

@@ -1,12 +1,3 @@
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.IO;
-using System.Threading;
-using static System.Console;
-using System.Text.RegularExpressions;
-using logger;
-using files;
 namespace host.handler;
 
 /// <summary>
@@ -125,7 +116,7 @@ public class connectionHandler{
 
     }
 
-    public void receiveFile(){
+    public void receiveFile(long size = 0){
 
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
@@ -135,17 +126,21 @@ public class connectionHandler{
 
             //Get file
             int sizeOfBuffer = 1024;
+            long sizeCount = 0;
             var buffer = new byte[sizeOfBuffer];
-            while(buffer.Length != 0){
-                try{
+            while(size != 0 && sizeCount != size){
+                //try{
                 int count = sSocket.Receive(buffer);
                 temp.Write(buffer,0,count);
-                }
+                sizeCount += count;
+                //Reset buffer
+                buffer = new byte[sizeOfBuffer];
+                //}
                 //If timeout !!! or other SocketException
-                catch(SocketException e){
+                /*catch(SocketException e){
                     log.l(e.Message,log.level.error);
                     break;
-                }
+                }*/
 
                 
             }

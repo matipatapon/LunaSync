@@ -88,7 +88,7 @@ public class file{
     readonly public string name = string.Empty;
     readonly public string localPath = string.Empty;
     readonly string hash = "";
-    long size = 0;
+    public long size = 0;
     long wTimeTicks = 0;
     int attributes = 0;
 
@@ -130,7 +130,7 @@ public class file{
                 this.localPath = fullName.Substring(dir.Length,fullName.Length-dir.Length);
             }       
             this.attributes = (int)File.GetAttributes(path);
-            this.size = fi.Length;
+            this.size = File.ReadAllBytes(path).LongLength;
             this.wTimeTicks = fi.LastWriteTime.Ticks;
             log.l($"Collected info about file : {this.ToString()}");
         }
