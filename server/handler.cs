@@ -66,13 +66,13 @@ public class connectionHandler{
         int count = 0;
         do{
             try{
-            byte[] bytes = new byte[1024];
+            byte[] bytes = new byte[4098];
             count = sSocket.Receive(bytes);
             data += Encoding.ASCII.GetString(bytes,0,count);
             end = data.Substring(data.Length-5,5);
             }
             catch(SocketException e){
-                log.l($"Received error {e}",log.level.error);
+                log.l($"Received error {e} data : {data}",log.level.error);
                 break;
             }
         }while(count!=0 && end != "<EOF>");

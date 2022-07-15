@@ -49,32 +49,28 @@ abstract public class hostshared{
         enumerateThroughSubdirs(dir);
 
         void enumerateThroughSubdirs(DirectoryInfo dir){
-
+        
             foreach(var d in dir.EnumerateDirectories()){
-            try{
+            
             if(d.LinkTarget is not null){
                 log.l($"{d} is link skipping",log.level.info);
                 continue;
             }
+            
                 foreach(var f in d.EnumerateFiles()){
-
-                    var fi = new file(f.FullName,fhandler.getDirectory().FullName);
-                    var localPath = fi.localPath;
-                    string rInfo = getInfo(localPath);
-                    file.RegexIHateU<string>(rInfo,"info");
-                    //#2 Compare this file to remote file then perform action 
-
-                    //Send file to server and replace with it 
-                    if(rInfo == "nogamenofile"){
-                        sendFile(fi);
+                    int retrylimit = 10;
+                    int retry = 1;
+                    var finfo = new file(f.FullName,dir.FullName);
+                    for(; retry <= retrylimit ; retry++){
+                        string rInfo = "";
+                        bool ok = getInfo(finfo.localPath,out rInfo);
+                        break;
                     }
-
+                    if(retry > retrylimit){
+                        log.l($"Failed sync file :{f.FullName}",log.level.error);
+                    }
                 }
             enumerateThroughSubdirs(d);
-            }
-            catch(Exception e){
-            log.l($"{e.Message} Exception",log.level.error);
-            }
         }
         }
         chandler.sendText("<END>");
@@ -137,35 +133,38 @@ abstract public class hostshared{
     /// Get Info about file from sFT 
     /// </summary>
     /// <returns>file.ToString() if file doesn't exist 'nogamenofile'</returns>
-    protected string getInfo(string localPath){
-        log.l("Getting info about file from sFT");
-        chandler.sendText("getInfo");
-        var response = chandler.receiveText();
-        if(response != "OK"){
-            log.l($"Master : Wrong response {response}",log.level.error);
-            throw new ArgumentException($"Wrong response {response}");
+    protected bool getInfo(string localPath,out string info){
+        string rp1 = "";
+        string send1 = "GETINFO";
+        if(chandler is null){
+            var msg1 = "chandler can't be null";
+            log.l(msg1,log.level.error);
+            throw new ArgumentNullException(msg1);
         }
+        //Asking slave for command
+        chandler.sendText($"GETINFO");
+        rp1 = chandler.receiveText();
+        if(!checkResponse("ACCEPTED",rp1)){
+            chandler.sendText("DENY");
+            throw new ArgumentException("Wrong response");
+        }
+        //Send local path to the file
         chandler.sendText(localPath);
-        var rInfo = chandler.receiveText();
-        log.l($"Got info about file {rInfo}");
-        return rInfo;
+        //Get Info about file
+        info = chandler.receiveText();
+        
+        log.l($"getInfo\n->{send1}\n<-{rp1}\n->{localPath}\n<-{info}");
+
+        return true;
     }
     int helpcount = 0;
     protected void sendInfo(string dir){
-        log.l("Sending info...");
-        var rsp1 = chandler.receiveText();
-        if(checkResponse("getInfo",rsp1)){
-        WriteLine("What should I do ?");   
-        }
-        chandler.sendText("OK");
-        //#1 get local path to the file 
+        
         var localPath = chandler.receiveText();
         var pathToFile = dir.Substring(0,dir.Length-1)+localPath;
         WriteLine($"#{++helpcount} {pathToFile}");
         log.l($"sendInfo crafted path to the file {pathToFile}");
-        //#2 Check if this file exist 
         bool exist = File.Exists(pathToFile);
-        //#3 if exist get info about file and send it if not send "nogamenofile"
         string info = "nogamenofile";
         if(exist){
             info = new file(pathToFile,dir).ToString();
@@ -189,16 +188,16 @@ abstract public class hostshared{
         var dir = fhandler.getDirectory().FullName;
         while(true){
             string command = chandler.receiveText();
-            chandler.sendText("OK");
 
+            chandler.sendText("ACCEPTED");
             switch(command){
                 case "GETINFO":
                     sendInfo(dir);
                 break;
                 case "RECEIVEFILE":
-                    if(!getFile(dir)){
+                    /*if(!getFile(dir)){
                         log.l("Can't send file !");
-                    }
+                    }*/
                 break;
             }
         }
