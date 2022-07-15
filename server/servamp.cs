@@ -20,8 +20,16 @@ abstract public class hostshared{
 
     }
 
-    //Syncing two folder structure 
+    static bool checkResponse(string expected , string gotted){
+        if(expected != gotted){
+            string message = $"The response received({gotted}) is not equal to the expected response{expected}";
+            log.l(message,log.level.error);
+            return false;
+        }
+        return true;
+    }
 
+    //Syncing two folder structure 
     /// <summary>
     /// Manage syncing file 
     /// </summary>
@@ -46,34 +54,19 @@ abstract public class hostshared{
             try{
             if(d.LinkTarget is not null){
                 log.l($"{d} is link skipping",log.level.info);
-                break;
+                continue;
             }
                 foreach(var f in d.EnumerateFiles()){
 
                     var fi = new file(f.FullName,fhandler.getDirectory().FullName);
                     var localPath = fi.localPath;
-
-                    var rInfo = getInfo(localPath);
+                    string rInfo = getInfo(localPath);
+                    file.RegexIHateU<string>(rInfo,"info");
                     //#2 Compare this file to remote file then perform action 
 
                     //Send file to server and replace with it 
                     if(rInfo == "nogamenofile"){
-
-                        log.l($"Master : Sending RECEIVEFILE");
-                        chandler.sendText("RECEIVEFILE");
-                        //1
-                        log.l($"Master : waiting for response");
-                        chandler.receiveText();
-                        //2
-                        log.l($"Master : Sending Info about file {fi.ToString()}");
-                        chandler.sendText(fi.ToString());
-                        log.l("Master : Waiting for response");
-                        chandler.receiveText();
-                        //3
-                        log.l("Master : Sending file");
-                        chandler.sendFile(fi);
-                        log.l("Master : waiting for response");
-                        chandler.receiveText();
+                        sendFile(fi);
                     }
 
                 }
@@ -87,13 +80,66 @@ abstract public class hostshared{
         chandler.sendText("<END>");
     }   
 
+    protected bool sendFile(file fi){
+        log.l($"Sending file");
+        chandler.sendText("RECEIVEFILE");
+        //1
+        log.l($"Master : waiting for response");
+        var rsp1 = chandler.receiveText(); 
+        if(rsp1 != "getFile"){
+            var msg1 = $"INVALID RESPOND EXPECTED getFile GOT {rsp1}";
+            log.l(msg1,log.level.error);
+            throw new ArgumentException(msg1);
+        }
+                        //2
+        log.l($"Master : Sending Info about file {fi.ToString()}");
+        chandler.sendText(fi.ToString());
+        log.l("Master : Waiting for response");
+        chandler.receiveText();
+        //3
+        log.l("Master : Sending file");
+        chandler.sendFile(fi);
+        log.l("Master : waiting for response");
+        string respond = chandler.receiveText();
+        switch(respond){
+            case "OK":
+                return true;
+            case "RETRY":
+                return false;
+            case  "FAIL":
+                return false;
+            default : 
+                throw new ArgumentException($"Wrong respond ! {respond}");
+        }
+        
+    }
+    protected bool getFile(string dir , int t = 0){
+        chandler.sendText("getFile");
+
+        var inforf = new file(info:chandler.receiveText());
+        //if error occured during getting the file
+        if(!chandler.receiveFile(inforf.size)){
+            chandler.sendText("FAIL");
+            return false;
+        }
+        else{
+        chandler.sendText("OK");
+        var localPath = dir+inforf.localPath.Substring(1,inforf.localPath.Length-1);
+        pathFactor(localPath);
+        File.Move("../temp",(localPath));
+        log.l($"receiveFile file received info gotted from the server : {inforf.ToString()}");
+
+        
+        }
+        return true;
+    }
     /// <summary>
     /// Get Info about file from sFT 
     /// </summary>
     /// <returns>file.ToString() if file doesn't exist 'nogamenofile'</returns>
     protected string getInfo(string localPath){
         log.l("Getting info about file from sFT");
-        chandler.sendText("GETINFO");
+        chandler.sendText("getInfo");
         var response = chandler.receiveText();
         if(response != "OK"){
             log.l($"Master : Wrong response {response}",log.level.error);
@@ -104,13 +150,18 @@ abstract public class hostshared{
         log.l($"Got info about file {rInfo}");
         return rInfo;
     }
+    int helpcount = 0;
     protected void sendInfo(string dir){
         log.l("Sending info...");
+        var rsp1 = chandler.receiveText();
+        if(checkResponse("getInfo",rsp1)){
+        WriteLine("What should I do ?");   
+        }
         chandler.sendText("OK");
         //#1 get local path to the file 
         var localPath = chandler.receiveText();
         var pathToFile = dir.Substring(0,dir.Length-1)+localPath;
-        WriteLine($"{pathToFile}");
+        WriteLine($"#{++helpcount} {pathToFile}");
         log.l($"sendInfo crafted path to the file {pathToFile}");
         //#2 Check if this file exist 
         bool exist = File.Exists(pathToFile);
@@ -138,36 +189,16 @@ abstract public class hostshared{
         var dir = fhandler.getDirectory().FullName;
         while(true){
             string command = chandler.receiveText();
-            
+            chandler.sendText("OK");
 
             switch(command){
                 case "GETINFO":
                     sendInfo(dir);
                 break;
                 case "RECEIVEFILE":
-                    //1
-                    log.l("Slave : sending OK");
-                    chandler.sendText("OK");
-                    //2
-                    log.l("Slave : receiving info about file");
-                    var inforf = new file(info:chandler.receiveText());
-                    log.l($"Slave : got information about file : {inforf.ToString()}");
-                    log.l("Slave : sending response");
-                    chandler.sendText("OK");
-                    //3
-                    log.l("Slave : receiving file");
-                    chandler.receiveFile(inforf.size);
-                    log.l("Slave : sending OK");
-                    chandler.sendText("OK");
-
-                    var localPath = dir+inforf.localPath.Substring(1,inforf.localPath.Length-1);
-
-                    pathFactor(localPath);
-                    
-                    File.Move("../temp",(localPath));
-                    
-                    
-
+                    if(!getFile(dir)){
+                        log.l("Can't send file !");
+                    }
                 break;
             }
         }
@@ -184,11 +215,12 @@ abstract public class hostshared{
             var m = ma.ToString();
             m = m.Substring(0,m.Length-1);
             currentPath+="/"+m;
-            WriteLine($"Gotcha {currentPath}");
+            
 
             //Check if directory doesn't exists and create them if didn't 
             if(!Directory.Exists(currentPath)){
                 Directory.CreateDirectory(currentPath);
+                log.l($"Created folder {currentPath}");
             }
         }
         return false;

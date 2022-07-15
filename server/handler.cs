@@ -111,12 +111,18 @@ public class connectionHandler{
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
         }
+
         log.l($"Sending file {fi.fullName}");
         sSocket.SendFile(fi.fullName);
 
     }
 
-    public void receiveFile(long size = 0){
+    /// <summary>
+    /// Receiving file from sendFile function 
+    /// </summary>
+    /// <param name="size">Count of the bytes in file</param>
+    /// <returns>True if file got transferred correctly. If error occured False</returns>
+    public bool receiveFile(long size = 0){
 
         if(sSocket is null){
             throw new ArgumentNullException("Socket is null !");
@@ -129,23 +135,23 @@ public class connectionHandler{
             long sizeCount = 0;
             var buffer = new byte[sizeOfBuffer];
             while(size != 0 && sizeCount != size){
-                //try{
+                try{
                 int count = sSocket.Receive(buffer);
                 temp.Write(buffer,0,count);
                 sizeCount += count;
                 //Reset buffer
                 buffer = new byte[sizeOfBuffer];
-                //}
-                //If timeout !!! or other SocketException
-                /*catch(SocketException e){
+                }
+                //if timeout !!! or other SocketException
+                catch(SocketException e){
                     log.l(e.Message,log.level.error);
-                    break;
-                }*/
+                    return false;
+                }
 
                 
             }
         }
-    
+        return true;
 
     }
 
