@@ -73,18 +73,26 @@ abstract public class hostshared{
                     int retrylimit = 10;
                     int retry = 1;
                     var finfo = new file(f.FullName,dir);
+                    file? rInfo = null;
+                    string action = "OK";
                     for(; retry <= retrylimit ; retry++){
-                        string rInfo = "";
-                        bool ok = getInfo(finfo.localPath,out rInfo);
-                        if(!ok){
-                            WriteLine("Failed getting info about {f.FullName} from server");
+                        string rsp2 = "";
+                        bool ok = getInfo(finfo.localPath,out rsp2);
+                        if(rsp2 != "nogamenofile"){
+                            rInfo = new file(info:rsp2);
                         }
-                        if(rInfo == "nogamenofile"){
+                        if(!ok){
+                            WriteLine($"Failed getting info about {f.FullName} from server retry");
+                            action = "ERROR";
+                            continue;
+                        }
+                        if(rInfo is null || (rInfo.hash != finfo.hash && rInfo.wTimeTicks < finfo.wTimeTicks)){
                             try{
                             chandler.sendText("GETFILE");
                             var rsp1 = chandler.receiveText();
                             if(rsp1 != "ACCEPTED"){
                                 log.l($"Wrong respond from the slave : {rsp1} retry ...");
+                                action = "ERROR";
                                 continue;
                             }
                             ok = sendFile(finfo);
@@ -92,23 +100,38 @@ abstract public class hostshared{
                             catch(Exception e){
                                 string msg1 = $"Failed send file due to {e}";
                                 log.l(msg1,log.level.error);
-                                WriteLine(msg1); 
+                                ok = false;
                             }
                             if(!ok){
                                 WriteLine("Error sending file retry ...");
+                                action = "ERROR";
                                 continue;
                             }
+                            action = "UPLOAD";
                         }
-                        
+             
+
                         break;
                     }
                     if(retry > retrylimit){
                         log.l($"Failed sync file :{f.FullName}",log.level.error);
                     }
+                    writeRecord(finfo,rInfo,action);
                 }
         }
         chandler.sendText("Eternal Natsu Dragneel");
+        
     }   
+
+    protected void writeRecord(file lInfo , file? rInfo = null, string action = "ERROR"){
+        string rHash = "NOTFOUND";
+        string rTime = "NOTFOUND";
+        if(rInfo is not null){
+            rHash = rInfo.hash;
+            rTime = rInfo.wTimeTicks.ToString();
+        }
+        WriteLine($"|{lInfo.name}|{lInfo.hash}|{rHash}|{lInfo.wTimeTicks}|{rTime}|{action}|");
+    }
 
     protected bool sendFile(file fi){
 
@@ -145,6 +168,16 @@ abstract public class hostshared{
         chandler.sendText("OK");
         var localPath = dir+inforf.localPath.Substring(1,inforf.localPath.Length-1);
         pathFactor(localPath);
+        
+        //Check if file is correct
+        var tInfo = new file("../temp","/");
+        if(tInfo.hash != inforf.hash){
+            log.l("File hash isn't correct !");
+            return false;
+        }
+        if(File.Exists(localPath)){
+            File.Delete(localPath);
+        }
         File.Move("../temp",(localPath));
         log.l($"receiveFile file received info gotted from the server : {inforf.ToString()}");
 
@@ -181,12 +214,10 @@ abstract public class hostshared{
 
         return true;
     }
-    int helpcount = 0;
     protected void sendInfo(string dir){
-        
         var localPath = chandler.receiveText();
         var pathToFile = dir.Substring(0,dir.Length-1)+localPath;
-        WriteLine($"#{++helpcount} {pathToFile}");
+        
         log.l($"sendInfo crafted path to the file {pathToFile}");
         bool exist = File.Exists(pathToFile);
         string info = "nogamenofile";

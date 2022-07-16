@@ -87,10 +87,10 @@ public class file{
     readonly public string fullName = string.Empty;
     readonly public string name = string.Empty;
     readonly public string localPath = string.Empty;
-    readonly string hash = "";
-    public long size = 0;
-    long wTimeTicks = 0;
-    int attributes = 0;
+    public readonly string hash = "";
+    public readonly long size = 0;
+    public readonly long wTimeTicks = 0;
+    public readonly int attributes = 0;
 
 
     /// <summary>
@@ -121,7 +121,7 @@ public class file{
         if(path is not null && dir is not null){
             var fi = new FileInfo(path);
             this.fullName = fi.FullName;
-            this.hash = "AAAABBBBEEEERRRRQQQQWWWWEEEERRRR";//this.getHash();
+            this.hash = this.getHash();
             this.name = fi.Name;
             if(dir[dir.Length-1] == '/'){
                 this.localPath = fullName.Substring(dir.Length-1,fullName.Length-dir.Length+1);
