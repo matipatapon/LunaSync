@@ -5,7 +5,7 @@ public class server: hostshared
     
     public server(int port = 0){
         log.l("Starting server thread",log.level.verbose);
-        fhandler = new filehandler("/home/itam/Desktop/TestZone/");
+        fhandler = new filehandler("/home/itam/Desktop/TestZone/SERVER");
         StartServerThread();
         
     }
@@ -39,14 +39,10 @@ public class server: hostshared
     public void StartServer(){
     
     //Listen For incoming data !
-    do{
         log.l("Server is waiting for connection...",log.level.info);
         chandler = new connectionHandler(connectionHandler.handlertype.client);
         log.l("Server is connected !");
         slaveFileTransfer();
-        
- 
-    }while(true);
     }
 
     int requestHandler(){

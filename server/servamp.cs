@@ -43,51 +43,62 @@ abstract public class hostshared{
             log.l("fhandler is null !!!",log.level.error);
             throw new ArgumentNullException("fhandler is null !");
         }
+        string dir = fhandler.getDirectory().FullName;
 
-        var dir = fhandler.getDirectory();
+        syncDir(fhandler.getDirectory());
+        enumerateThroughSubdirs(fhandler.getDirectory());
 
-        enumerateThroughSubdirs(dir);
-
-        void enumerateThroughSubdirs(DirectoryInfo dir){
+        void enumerateThroughSubdirs(DirectoryInfo currentDir){
         
-            foreach(var d in dir.EnumerateDirectories()){
-            
-            if(d.LinkTarget is not null){
+            foreach(var d in currentDir.EnumerateDirectories()){
+            syncDir(d);
+            enumerateThroughSubdirs(d);
+        }
+        }
+
+        void syncDir(DirectoryInfo d){
+                if(d.LinkTarget is not null){
                 log.l($"{d} is link skipping",log.level.info);
-                continue;
+                return;
             }
             
                 foreach(var f in d.EnumerateFiles()){
                     int retrylimit = 10;
                     int retry = 1;
-                    var finfo = new file(f.FullName,dir.FullName);
+                    var finfo = new file(f.FullName,dir);
                     for(; retry <= retrylimit ; retry++){
                         string rInfo = "";
                         bool ok = getInfo(finfo.localPath,out rInfo);
+                        if(!ok){
+                            WriteLine("Failed getting info about {f.FullName} from server");
+                        }
+                        if(rInfo == "nogamenofile"){
+                            //ok = sendFile(finfo);
+                            if(!ok){
+                                WriteLine("Error sending file retry ...");
+                                continue;
+                            }
+                        }
+                        
                         break;
                     }
                     if(retry > retrylimit){
                         log.l($"Failed sync file :{f.FullName}",log.level.error);
                     }
                 }
-            enumerateThroughSubdirs(d);
         }
-        }
-        chandler.sendText("<END>");
+        chandler.sendText("Eternal Natsu Dragneel");
     }   
 
     protected bool sendFile(file fi){
-        log.l($"Sending file");
-        chandler.sendText("RECEIVEFILE");
-        //1
-        log.l($"Master : waiting for response");
+
+        chandler.sendText("GETFILE");
         var rsp1 = chandler.receiveText(); 
-        if(rsp1 != "getFile"){
-            var msg1 = $"INVALID RESPOND EXPECTED getFile GOT {rsp1}";
+        if(rsp1 != "GIVEINFO"){
+            var msg1 = $"INVALID RESPOND EXPECTED GIVEPATH GOT {rsp1}";
             log.l(msg1,log.level.error);
-            throw new ArgumentException(msg1);
+            return false;
         }
-                        //2
         log.l($"Master : Sending Info about file {fi.ToString()}");
         chandler.sendText(fi.ToString());
         log.l("Master : Waiting for response");
@@ -110,10 +121,8 @@ abstract public class hostshared{
         
     }
     protected bool getFile(string dir , int t = 0){
-        chandler.sendText("getFile");
-
+        chandler.sendText("GIVEINFO");
         var inforf = new file(info:chandler.receiveText());
-        //if error occured during getting the file
         if(!chandler.receiveFile(inforf.size)){
             chandler.sendText("FAIL");
             return false;
@@ -188,16 +197,17 @@ abstract public class hostshared{
         var dir = fhandler.getDirectory().FullName;
         while(true){
             string command = chandler.receiveText();
-
+        
             chandler.sendText("ACCEPTED");
             switch(command){
                 case "GETINFO":
                     sendInfo(dir);
                 break;
-                case "RECEIVEFILE":
-                    /*if(!getFile(dir)){
-                        log.l("Can't send file !");
-                    }*/
+                case "GETFILE":
+                    getFile(dir);
+                break;
+                case "Eternal Natsu Dragneel":
+                    WriteLine("Sync ended");
                 break;
             }
         }

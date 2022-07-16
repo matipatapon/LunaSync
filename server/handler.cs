@@ -39,7 +39,7 @@ public class connectionHandler{
                 ep = new IPEndPoint(IPAddress.Any,6666);
                 sSocket.Bind(ep);
                 sSocket.Listen(2);
-                sSocket.ReceiveTimeout = 5000;
+                sSocket.ReceiveTimeout = 0;
                 WriteLine($"Server started listening on port {getPort().ToString()}");
                 sSocket = sSocket.Accept();
             break;

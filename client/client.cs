@@ -36,7 +36,7 @@ public class client: hostshared
         string? path1 = "127.0.0.1:6666/"; //ReadLine();
         log.l($"Got first path {path1}");
         //Write("Please enter second dir path : ");
-        string path2 = "/home/itam/Desktop"; //string? path2 = ReadLine();
+        string path2 = "/home/itam/Desktop/TestZone/CLIENT"; //string? path2 = ReadLine();
         log.l($"Got second path {path2}");
         
         fhandler = new filehandler(path2);
