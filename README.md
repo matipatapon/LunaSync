@@ -1,4 +1,3 @@
 # LunaSync
 Free and Open Source folder Sync utility
-! Beware !
-This program is still under construction and didn't work !!!
+<h1>LunaSync DON"T WORK AT THE MOMENT</h1>
