@@ -47,7 +47,11 @@ abstract public class hostshared{
 
         syncDir(fhandler.getDirectory());
         enumerateThroughSubdirs(fhandler.getDirectory());
-
+        /// <summary>
+        /// Enumerate through subdirectories of the currentDir,
+        /// and execute syncDir on them
+        /// </summary>
+        /// <param name="currentDir">DirectoryInfo</param>
         void enumerateThroughSubdirs(DirectoryInfo currentDir){
         
             foreach(var d in currentDir.EnumerateDirectories()){
@@ -55,7 +59,10 @@ abstract public class hostshared{
             enumerateThroughSubdirs(d);
         }
         }
-
+        /// <summary>
+        /// Go through files of the directory and sync them 
+        /// </summary>
+        /// <param name="d">DirectoryInfo</param>
         void syncDir(DirectoryInfo d){
                 if(d.LinkTarget is not null){
                 log.l($"{d} is link skipping",log.level.info);
@@ -73,7 +80,20 @@ abstract public class hostshared{
                             WriteLine("Failed getting info about {f.FullName} from server");
                         }
                         if(rInfo == "nogamenofile"){
-                            //ok = sendFile(finfo);
+                            try{
+                            chandler.sendText("GETFILE");
+                            var rsp1 = chandler.receiveText();
+                            if(rsp1 != "ACCEPTED"){
+                                log.l($"Wrong respond from the slave : {rsp1} retry ...");
+                                continue;
+                            }
+                            ok = sendFile(finfo);
+                            }
+                            catch(Exception e){
+                                string msg1 = $"Failed send file due to {e}";
+                                log.l(msg1,log.level.error);
+                                WriteLine(msg1); 
+                            }
                             if(!ok){
                                 WriteLine("Error sending file retry ...");
                                 continue;
@@ -92,19 +112,9 @@ abstract public class hostshared{
 
     protected bool sendFile(file fi){
 
-        chandler.sendText("GETFILE");
-        var rsp1 = chandler.receiveText(); 
-        if(rsp1 != "GIVEINFO"){
-            var msg1 = $"INVALID RESPOND EXPECTED GIVEPATH GOT {rsp1}";
-            log.l(msg1,log.level.error);
-            return false;
-        }
-        log.l($"Master : Sending Info about file {fi.ToString()}");
         chandler.sendText(fi.ToString());
-        log.l("Master : Waiting for response");
         chandler.receiveText();
-        //3
-        log.l("Master : Sending file");
+
         chandler.sendFile(fi);
         log.l("Master : waiting for response");
         string respond = chandler.receiveText();
@@ -121,8 +131,12 @@ abstract public class hostshared{
         
     }
     protected bool getFile(string dir , int t = 0){
-        chandler.sendText("GIVEINFO");
-        var inforf = new file(info:chandler.receiveText());
+        
+
+        file inforf;
+        inforf = new file(info:chandler.receiveText());
+        chandler.sendText("OK");
+
         if(!chandler.receiveFile(inforf.size)){
             chandler.sendText("FAIL");
             return false;
@@ -155,7 +169,8 @@ abstract public class hostshared{
         rp1 = chandler.receiveText();
         if(!checkResponse("ACCEPTED",rp1)){
             chandler.sendText("DENY");
-            throw new ArgumentException("Wrong response");
+            info = "ERROR";
+            return false;
         }
         //Send local path to the file
         chandler.sendText(localPath);
