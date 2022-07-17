@@ -33,7 +33,7 @@ abstract public class hostshared{
     /// <summary>
     /// Manage syncing file 
     /// </summary>
-    protected void masterFileTransfer(){
+    protected void masterFileTransfer(bool switchAfterFinish = true){
 
         if(chandler is null){
             log.l("chandler is null !!!",log.level.error);
@@ -86,7 +86,7 @@ abstract public class hostshared{
                             action = "ERROR";
                             continue;
                         }
-                        if(rInfo is null || (rInfo.hash != finfo.hash && rInfo.wTimeTicks < finfo.wTimeTicks)){
+                        if(rInfo is null || (rInfo.hash != finfo.hash)){
                             try{
                             chandler.sendText("GETFILE");
                             var rsp1 = chandler.receiveText();
@@ -95,7 +95,14 @@ abstract public class hostshared{
                                 action = "ERROR";
                                 continue;
                             }
-                            ok = sendFile(finfo);
+                            if( rInfo is null || rInfo.wTimeTicks < finfo.wTimeTicks ){
+                                ok = sendFile(finfo);
+                                action = "UPLOAD";
+                            }
+                            else if( rInfo.wTimeTicks > finfo.wTimeTicks){
+                                ok = getFile(dir);
+                                action = "DOWNLOAD";
+                            }
                             }
                             catch(Exception e){
                                 string msg1 = $"Failed send file due to {e}";
@@ -107,7 +114,7 @@ abstract public class hostshared{
                                 action = "ERROR";
                                 continue;
                             }
-                            action = "UPLOAD";
+                            
                         }
              
 
@@ -119,7 +126,13 @@ abstract public class hostshared{
                     writeRecord(finfo,rInfo,action);
                 }
         }
-        chandler.sendText("Eternal Natsu Dragneel");
+        
+        WriteLine("Switching roles !");
+        if(switchAfterFinish){
+            chandler.sendText("REZERO");
+            chandler.receiveText();
+            slaveFileTransfer();
+        }
         
     }   
 
@@ -214,15 +227,17 @@ abstract public class hostshared{
 
         return true;
     }
-    protected void sendInfo(string dir){
+    protected void sendInfo(string dir,out file? fInfo){
         var localPath = chandler.receiveText();
         var pathToFile = dir.Substring(0,dir.Length-1)+localPath;
         
         log.l($"sendInfo crafted path to the file {pathToFile}");
         bool exist = File.Exists(pathToFile);
         string info = "nogamenofile";
+        fInfo = null;
         if(exist){
-            info = new file(pathToFile,dir).ToString();
+            fInfo = new file(pathToFile,dir);
+            info = fInfo.ToString();
         }
         log.l($"sendInfo sending back info {info}");
         chandler.sendText(info);
@@ -241,20 +256,33 @@ abstract public class hostshared{
             throw new ArgumentNullException("fhandler is null");
         }
         var dir = fhandler.getDirectory().FullName;
+        file? lastFile = null;
         while(true){
             string command = chandler.receiveText();
-        
+
             chandler.sendText("ACCEPTED");
             switch(command){
                 case "GETINFO":
-                    sendInfo(dir);
+                    sendInfo(dir,out lastFile);
                 break;
                 case "GETFILE":
                     getFile(dir);
                 break;
-                case "Eternal Natsu Dragneel":
-                    WriteLine("Sync ended");
+                case "SENDLASTFILE":
+                    if(lastFile is null){
+                        log.l("There is no last file !!!",log.level.error);
+                        break;
+                    }
+                    sendFile(lastFile);
                 break;
+                case "Eternal Natsu Dragneel":
+                    WriteLine("Sync ended !");
+                return;
+                case "REZERO":
+                    log.l("Slave switching roles");
+                    masterFileTransfer(false);
+                return;
+                
             }
         }
     }
