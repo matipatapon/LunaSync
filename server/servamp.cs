@@ -88,20 +88,17 @@ abstract public class hostshared{
                         }
                         if(rInfo is null || (rInfo.hash != finfo.hash)){
                             try{
-                            chandler.sendText("GETFILE");
-                            var rsp1 = chandler.receiveText();
-                            if(rsp1 != "ACCEPTED"){
-                                log.l($"Wrong respond from the slave : {rsp1} retry ...");
-                                action = "ERROR";
-                                continue;
-                            }
+                            
                             if( rInfo is null || rInfo.wTimeTicks < finfo.wTimeTicks ){
+                                chandler.sendText("GETFILE");
+                                var rsp1 = chandler.receiveText();
+                                if(rsp1 != "ACCEPTED"){
+                                    log.l($"Wrong respond from the slave : {rsp1} retry ...");
+                                    action = "ERROR";
+                                    continue;
+                                }
                                 ok = sendFile(finfo);
                                 action = "UPLOAD";
-                            }
-                            else if( rInfo.wTimeTicks > finfo.wTimeTicks){
-                                ok = getFile(dir);
-                                action = "DOWNLOAD";
                             }
                             }
                             catch(Exception e){
@@ -132,6 +129,10 @@ abstract public class hostshared{
             chandler.sendText("REZERO");
             chandler.receiveText();
             slaveFileTransfer();
+        }
+        else{
+            chandler.sendText("Eternal Natsu Dragneel");
+            chandler.receiveText();
         }
         
     }   
@@ -267,13 +268,6 @@ abstract public class hostshared{
                 break;
                 case "GETFILE":
                     getFile(dir);
-                break;
-                case "SENDLASTFILE":
-                    if(lastFile is null){
-                        log.l("There is no last file !!!",log.level.error);
-                        break;
-                    }
-                    sendFile(lastFile);
                 break;
                 case "Eternal Natsu Dragneel":
                     WriteLine("Sync ended !");
